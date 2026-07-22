@@ -16,7 +16,7 @@ export function Panel({
   return (
     <section
       aria-label={title}
-      className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 ${className}`}
+      className={`rounded-2xl border border-border-subtle bg-surface-raised p-5 shadow-sm transition-[border-color,box-shadow] duration-200 hover:border-slate-300 hover:shadow-md motion-reduce:transition-none sm:p-6 ${className}`}
     >
       <header>
         <h2 className="text-base font-semibold text-slate-900 sm:text-lg">

@@ -3,12 +3,49 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --surface-raised: #ffffff;
+  --border-subtle: #e2e8f0;
+  --text-muted: #64748b;
+  --brand: #047857;
+  --brand-soft: #ecfdf5;
+  --chart-grid: #e2e8f0;
+  --chart-axis: #64748b;
+  --chart-cursor: #94a3b8;
+  --chart-1: #059669;
+  --chart-2: #0d9488;
+  --chart-3: #2563eb;
+  --chart-4: #7c3aed;
+  --chart-5: #64748b;
+  --shadow-floating: 0 12px 28px rgb(15 23 42 / 12%);
+  --motion-duration-enter: 300ms;
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface-raised: var(--surface-raised);
+  --color-border-subtle: var(--border-subtle);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
   --font-sans: var(--font-geist-sans);
+}
+
+@keyframes dashboard-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-card-enter {
+  animation: dashboard-card-enter var(--motion-duration-enter)
+    var(--motion-ease-out) both;
 }
 
 html {
@@ -30,4 +67,10 @@ body {
 ::selection {
   background: #a7f3d0;
   color: #064e3b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-card-enter {
+    animation: none;
+  }
 }

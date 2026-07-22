@@ -1,4 +1,5 @@
 import {
+  BadgeInfo,
   Bell,
   Clock3,
   Cpu,
@@ -68,14 +69,11 @@ export function Sidebar() {
 
       <div className="m-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-200">
-          <span
-            aria-hidden="true"
-            className="size-2 rounded-full bg-emerald-400 ring-4 ring-emerald-400/10"
-          />
-          Ambiente monitorado
+          <BadgeInfo aria-hidden="true" className="size-4 text-emerald-300" />
+          Modo demonstração
         </div>
         <p className="mt-2 text-xs leading-5 text-slate-500">
-          Interface demonstrativa com dados estáticos.
+          Interface preenchida apenas com dados simulados.
         </p>
       </div>
     </aside>

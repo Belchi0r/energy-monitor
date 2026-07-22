@@ -1,0 +1,117 @@
+import type { DashboardData } from "@/components/types/dashboard";
+
+export const dashboardData = {
+  metrics: [
+    {
+      id: "currentPower",
+      title: "Potência atual",
+      value: 1420,
+      format: "power",
+      description: "Valor simulado para este cenário",
+    },
+    {
+      id: "dailyConsumption",
+      title: "Consumo hoje",
+      value: 8.7,
+      format: "energy",
+      description: "Acumulado simulado desde 00h",
+    },
+    {
+      id: "estimatedCost",
+      title: "Custo estimado",
+      value: 7.32,
+      format: "currency",
+      description: "Projeção ilustrativa para o dia",
+    },
+    {
+      id: "activeDevices",
+      title: "Dispositivos ativos",
+      value: 5,
+      format: "integer",
+      description: "Equipamentos no cenário demonstrativo",
+    },
+  ],
+  energyUsage: [
+    { time: "00h", consumptionKwh: 0.35 },
+    { time: "02h", consumptionKwh: 0.28 },
+    { time: "04h", consumptionKwh: 0.27 },
+    { time: "06h", consumptionKwh: 0.55 },
+    { time: "08h", consumptionKwh: 0.82 },
+    { time: "10h", consumptionKwh: 0.65 },
+    { time: "12h", consumptionKwh: 1.05 },
+    { time: "14h", consumptionKwh: 0.78 },
+    { time: "16h", consumptionKwh: 0.62 },
+    { time: "18h", consumptionKwh: 1.28 },
+    { time: "20h", consumptionKwh: 1.35 },
+    { time: "22h", consumptionKwh: 0.7 },
+  ],
+  deviceConsumption: [
+    {
+      id: "air-conditioner",
+      device: "Ar-condicionado",
+      description: "Climatização no cenário demonstrativo",
+      consumptionKwh: 3,
+    },
+    {
+      id: "shower",
+      device: "Chuveiro elétrico",
+      description: "Aquecimento de água no período",
+      consumptionKwh: 2.1,
+    },
+    {
+      id: "refrigerator",
+      device: "Geladeira",
+      description: "Operação contínua de refrigeração",
+      consumptionKwh: 1.5,
+    },
+    {
+      id: "washing-machine",
+      device: "Máquina de lavar",
+      description: "Ciclo simulado de lavagem",
+      consumptionKwh: 1.2,
+    },
+    {
+      id: "others",
+      device: "Outros",
+      description: "Demais equipamentos agrupados",
+      consumptionKwh: 0.9,
+    },
+  ],
+  recentActivities: [
+    {
+      id: "activity-1",
+      device: "Ar-condicionado",
+      event: "Ligado no modo econômico",
+      time: "14:32",
+      status: "active",
+    },
+    {
+      id: "activity-2",
+      device: "Chuveiro elétrico",
+      event: "Ciclo de aquecimento encerrado",
+      time: "13:18",
+      status: "completed",
+    },
+    {
+      id: "activity-3",
+      device: "Geladeira",
+      event: "Pico de consumo identificado",
+      time: "12:47",
+      status: "attention",
+    },
+    {
+      id: "activity-4",
+      device: "Máquina de lavar",
+      event: "Ciclo de lavagem finalizado",
+      time: "11:05",
+      status: "completed",
+    },
+    {
+      id: "activity-5",
+      device: "Iluminação da sala",
+      event: "Rotina de iluminação ativada",
+      time: "08:12",
+      status: "active",
+    },
+  ],
+} as const satisfies DashboardData;

@@ -35,6 +35,8 @@ const statusConfig: Record<
 
 type RecentActivityTableProps = {
   activities: readonly RecentActivity[];
+  activityTimeLabel: string;
+  periodLabel: string;
 };
 
 function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
@@ -53,17 +55,19 @@ function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
 
 export function RecentActivityTable({
   activities,
+  activityTimeLabel,
+  periodLabel,
 }: RecentActivityTableProps) {
   return (
     <Panel
       title="Atividade recente"
-      description="Eventos simulados para demonstrar o acompanhamento dos dispositivos"
+      description={`Até cinco eventos simulados em ${periodLabel.toLocaleLowerCase("pt-BR")}`}
     >
       <ul className="space-y-3 md:hidden" aria-label="Atividades simuladas recentes">
         {activities.map((activity) => (
           <li
             key={activity.id}
-            className="rounded-xl border border-slate-200 bg-slate-50/60 p-4"
+            className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <p className="font-semibold text-slate-900">{activity.device}</p>
@@ -74,13 +78,13 @@ export function RecentActivityTable({
             </p>
             <p className="mt-3 flex items-center gap-1.5 text-xs font-medium tabular-nums text-slate-500">
               <Clock3 aria-hidden="true" className="size-3.5" />
-              Horário simulado: {activity.time}
+              {activityTimeLabel} simulado: {activity.occurredAt}
             </p>
           </li>
         ))}
       </ul>
 
-      <div className="hidden overflow-hidden rounded-xl border border-slate-200 md:block">
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200/80 md:block">
         <table className="w-full table-fixed border-collapse text-left">
           <caption className="sr-only">
             Atividades recentes simuladas dos dispositivos
@@ -94,7 +98,7 @@ export function RecentActivityTable({
                 Evento
               </th>
               <th scope="col" className="w-[15%] px-5 py-3.5">
-                Horário
+                {activityTimeLabel}
               </th>
               <th scope="col" className="w-1/5 px-5 py-3.5">
                 Status
@@ -109,7 +113,7 @@ export function RecentActivityTable({
               >
                 <th
                   scope="row"
-                  className="px-5 py-4 text-sm font-semibold text-slate-900"
+                  className="px-5 py-4 text-sm font-semibold text-slate-900 [hyphens:none]"
                 >
                   {activity.device}
                 </th>
@@ -117,7 +121,7 @@ export function RecentActivityTable({
                   {activity.event}
                 </td>
                 <td className="px-5 py-4 text-sm font-medium tabular-nums text-slate-600">
-                  {activity.time}
+                  {activity.occurredAt}
                 </td>
                 <td className="px-5 py-4">
                   <ActivityStatusBadge status={activity.status} />

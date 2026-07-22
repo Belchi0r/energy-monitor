@@ -1,117 +1,176 @@
-import type { DashboardData } from "@/components/types/dashboard";
+import { dashboardDatasets, getDashboardDataset } from "@/components/data/periods";
+import type {
+  DashboardMetric,
+  DashboardPeriod,
+  DashboardPeriodDefinition,
+} from "@/components/types/dashboard";
+import {
+  compareNumbers,
+  sumEnergy,
+  validateDashboardDataset,
+} from "@/components/utils/dashboard-comparison";
+import {
+  analyzeDeviceConsumption,
+  analyzeEnergyUsage,
+  type DeviceConsumptionAnalysis,
+  type EnergyUsageAnalysis,
+} from "@/components/utils/dashboard-insights";
+import { getPeriodDefinition } from "@/components/utils/dashboard-period";
 
-export const dashboardData = {
-  metrics: [
+const SIMULATED_TARIFF_PER_KWH = 0.84;
+
+Object.values(dashboardDatasets).forEach(validateDashboardDataset);
+
+export type DashboardViewData = {
+  period: DashboardPeriod;
+  compare: boolean;
+  definition: DashboardPeriodDefinition;
+  currentLabel: string;
+  previousLabel?: string;
+  metrics: readonly DashboardMetric[];
+  temporalAnalysis: EnergyUsageAnalysis;
+  deviceAnalysis: DeviceConsumptionAnalysis;
+  activities: ReturnType<typeof getDashboardDataset>["recentActivities"];
+  transitionKey: string;
+};
+
+function buildMetrics(
+  period: DashboardPeriod,
+  compare: boolean,
+  definition: DashboardPeriodDefinition,
+) {
+  const current = getDashboardDataset(definition.currentDatasetId);
+  const previous = getDashboardDataset(definition.previousDatasetId);
+  const total = sumEnergy(current.energyUsage);
+  const previousTotal = sumEnergy(previous.energyUsage);
+  const comparison = (currentValue: number, previousValue: number) =>
+    compare
+      ? compareNumbers(
+          currentValue,
+          previousValue,
+          definition.comparisonLabel,
+        )
+      : undefined;
+
+  if (period === "today") {
+    return [
+      {
+        id: "currentPower",
+        title: "Potência atual",
+        value: current.currentPowerW ?? 0,
+        format: "power",
+        description: "Leitura simulada no momento",
+        comparison: comparison(
+          current.currentPowerW ?? 0,
+          previous.currentPowerW ?? 0,
+        ),
+      },
+      {
+        id: "periodConsumption",
+        title: "Consumo hoje",
+        value: total,
+        format: "energy",
+        description: "Acumulado demonstrativo desde 00h",
+        comparison: comparison(total, previousTotal),
+      },
+      {
+        id: "estimatedCost",
+        title: "Custo estimado",
+        value: total * SIMULATED_TARIFF_PER_KWH,
+        format: "currency",
+        description: "Tarifa simulada de R$ 0,84/kWh",
+        comparison: comparison(
+          total * SIMULATED_TARIFF_PER_KWH,
+          previousTotal * SIMULATED_TARIFF_PER_KWH,
+        ),
+      },
+      {
+        id: "activeDevices",
+        title: "Dispositivos ativos",
+        value: current.activeDevices,
+        format: "integer",
+        description: "Equipamentos no cenário demonstrativo",
+        comparison: comparison(current.activeDevices, previous.activeDevices),
+      },
+    ] satisfies readonly DashboardMetric[];
+  }
+
+  const topDevice = [...current.deviceConsumption].sort(
+    (first, second) => second.consumptionKwh - first.consumptionKwh,
+  )[0];
+  const previousTopDevice = previous.deviceConsumption.find(
+    (item) => item.id === topDevice.id,
+  );
+
+  return [
     {
-      id: "currentPower",
-      title: "Potência atual",
-      value: 1420,
-      format: "power",
-      description: "Valor simulado para este cenário",
+      id: "periodConsumption",
+      title: "Consumo no período",
+      value: total,
+      format: "energy",
+      description: `Total simulado em ${current.daysCount} dias`,
+      comparison: comparison(total, previousTotal),
     },
     {
-      id: "dailyConsumption",
-      title: "Consumo hoje",
-      value: 8.7,
+      id: "dailyAverage",
+      title: "Média diária",
+      value: total / current.daysCount,
       format: "energy",
-      description: "Acumulado simulado desde 00h",
+      description: "Média demonstrativa por dia",
+      comparison: comparison(
+        total / current.daysCount,
+        previousTotal / previous.daysCount,
+      ),
     },
     {
       id: "estimatedCost",
       title: "Custo estimado",
-      value: 7.32,
+      value: total * SIMULATED_TARIFF_PER_KWH,
       format: "currency",
-      description: "Projeção ilustrativa para o dia",
+      description: "Tarifa simulada de R$ 0,84/kWh",
+      comparison: comparison(
+        total * SIMULATED_TARIFF_PER_KWH,
+        previousTotal * SIMULATED_TARIFF_PER_KWH,
+      ),
     },
     {
-      id: "activeDevices",
-      title: "Dispositivos ativos",
-      value: 5,
-      format: "integer",
-      description: "Equipamentos no cenário demonstrativo",
+      id: "topDevice",
+      title: "Maior consumo",
+      value: topDevice.consumptionKwh,
+      format: "energy",
+      description: topDevice.device,
+      comparison: comparison(
+        topDevice.consumptionKwh,
+        previousTopDevice?.consumptionKwh ?? 0,
+      ),
     },
-  ],
-  energyUsage: [
-    { time: "00h", consumptionKwh: 0.35 },
-    { time: "02h", consumptionKwh: 0.28 },
-    { time: "04h", consumptionKwh: 0.27 },
-    { time: "06h", consumptionKwh: 0.55 },
-    { time: "08h", consumptionKwh: 0.82 },
-    { time: "10h", consumptionKwh: 0.65 },
-    { time: "12h", consumptionKwh: 1.05 },
-    { time: "14h", consumptionKwh: 0.78 },
-    { time: "16h", consumptionKwh: 0.62 },
-    { time: "18h", consumptionKwh: 1.28 },
-    { time: "20h", consumptionKwh: 1.35 },
-    { time: "22h", consumptionKwh: 0.7 },
-  ],
-  deviceConsumption: [
-    {
-      id: "air-conditioner",
-      device: "Ar-condicionado",
-      description: "Climatização no cenário demonstrativo",
-      consumptionKwh: 3,
-    },
-    {
-      id: "shower",
-      device: "Chuveiro elétrico",
-      description: "Aquecimento de água no período",
-      consumptionKwh: 2.1,
-    },
-    {
-      id: "refrigerator",
-      device: "Geladeira",
-      description: "Operação contínua de refrigeração",
-      consumptionKwh: 1.5,
-    },
-    {
-      id: "washing-machine",
-      device: "Máquina de lavar",
-      description: "Ciclo simulado de lavagem",
-      consumptionKwh: 1.2,
-    },
-    {
-      id: "others",
-      device: "Outros",
-      description: "Demais equipamentos agrupados",
-      consumptionKwh: 0.9,
-    },
-  ],
-  recentActivities: [
-    {
-      id: "activity-1",
-      device: "Ar-condicionado",
-      event: "Ligado no modo econômico",
-      time: "14:32",
-      status: "active",
-    },
-    {
-      id: "activity-2",
-      device: "Chuveiro elétrico",
-      event: "Ciclo de aquecimento encerrado",
-      time: "13:18",
-      status: "completed",
-    },
-    {
-      id: "activity-3",
-      device: "Geladeira",
-      event: "Pico de consumo identificado",
-      time: "12:47",
-      status: "attention",
-    },
-    {
-      id: "activity-4",
-      device: "Máquina de lavar",
-      event: "Ciclo de lavagem finalizado",
-      time: "11:05",
-      status: "completed",
-    },
-    {
-      id: "activity-5",
-      device: "Iluminação da sala",
-      event: "Rotina de iluminação ativada",
-      time: "08:12",
-      status: "active",
-    },
-  ],
-} as const satisfies DashboardData;
+  ] satisfies readonly DashboardMetric[];
+}
+
+export function getDashboardViewData(
+  period: DashboardPeriod,
+  compare: boolean,
+): DashboardViewData {
+  const definition = getPeriodDefinition(period);
+  const current = getDashboardDataset(definition.currentDatasetId);
+  const previous = compare
+    ? getDashboardDataset(definition.previousDatasetId)
+    : undefined;
+
+  return {
+    period,
+    compare,
+    definition,
+    currentLabel: current.label,
+    previousLabel: previous?.label,
+    metrics: buildMetrics(period, compare, definition),
+    temporalAnalysis: analyzeEnergyUsage(current, definition, previous),
+    deviceAnalysis: analyzeDeviceConsumption(
+      current.deviceConsumption,
+      previous?.deviceConsumption,
+      definition.comparisonLabel,
+    ),
+    activities: current.recentActivities.slice(0, 5),
+    transitionKey: `${period}-${compare ? "comparison" : "current"}`,
+  };
+}

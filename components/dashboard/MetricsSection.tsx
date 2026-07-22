@@ -1,8 +1,10 @@
 import {
   Activity,
+  CalendarDays,
   DollarSign,
   Gauge,
   Power,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,20 +19,27 @@ import type {
 
 const metricIcons: Record<MetricId, LucideIcon> = {
   currentPower: Gauge,
-  dailyConsumption: Activity,
+  periodConsumption: Activity,
+  dailyAverage: CalendarDays,
   estimatedCost: DollarSign,
   activeDevices: Power,
+  topDevice: Zap,
 };
 
 type MetricsSectionProps = {
   metrics: readonly DashboardMetric[];
+  transitionKey: string;
 };
 
-export function MetricsSection({ metrics }: MetricsSectionProps) {
+export function MetricsSection({
+  metrics,
+  transitionKey,
+}: MetricsSectionProps) {
   return (
     <section
       aria-label="Indicadores de consumo"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      key={transitionKey}
+      className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
     >
       {metrics.map((metric, index) => {
         const cardProps: MetricCardProps = {
@@ -39,6 +48,7 @@ export function MetricsSection({ metrics }: MetricsSectionProps) {
           format: metric.format,
           description: metric.description,
           icon: metricIcons[metric.id],
+          comparison: metric.comparison,
           animationDelayMs: index * 50,
         };
 

@@ -41,6 +41,12 @@ const detailedPercentageFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 1,
 });
 
+const signedPercentageFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "percent",
+  maximumFractionDigits: 1,
+  signDisplay: "exceptZero",
+});
+
 export type FormattedMetricValue = {
   value: string;
   unit?: string;
@@ -72,6 +78,12 @@ export function formatDetailedPercentage(value: number, total: number) {
 
 export function formatRatioPercentage(ratio: number) {
   return percentageFormatter.format(Number.isFinite(ratio) ? ratio : 0);
+}
+
+export function formatSignedRatioPercentage(ratio: number | null) {
+  return ratio === null
+    ? "sem base"
+    : signedPercentageFormatter.format(Number.isFinite(ratio) ? ratio : 0);
 }
 
 export function formatMetricNumber(

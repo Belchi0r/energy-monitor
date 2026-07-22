@@ -1,13 +1,23 @@
 import type {
+  AlignedTemporalPoint,
+  DashboardDataset,
+  DashboardPeriodDefinition,
   DeviceConsumption,
-  EnergyUsagePoint,
+  NumericComparison,
 } from "@/components/types/dashboard";
+import {
+  alignTemporalSeries,
+  compareNumbers,
+  findPreviousDevice,
+  sumEnergy,
+} from "@/components/utils/dashboard-comparison";
 import {
   formatChartEnergy,
   formatDetailedPercentage,
   formatEnergy,
   formatPercentage,
   formatRatioPercentage,
+  formatSignedChartEnergy,
 } from "@/components/utils/formatters";
 
 export type InsightTone = "brand" | "neutral" | "attention";
@@ -19,20 +29,22 @@ export type ChartInsight = {
   tone: InsightTone;
 };
 
-export type AnalyzedEnergyPoint = EnergyUsagePoint & {
-  index: number;
-  dailyPercentage: number;
-  deltaFromPreviousKwh: number | null;
+export type AnalyzedTemporalPoint = AlignedTemporalPoint & {
+  periodPercentage: number;
+  deltaFromPreviousPointKwh: number | null;
+  comparison?: NumericComparison;
   isPeak: boolean;
   isMinimum: boolean;
 };
 
 export type EnergyUsageAnalysis = {
-  points: readonly AnalyzedEnergyPoint[];
+  points: readonly AnalyzedTemporalPoint[];
   totalKwh: number;
+  previousTotalKwh?: number;
   averageKwh: number;
-  peak: AnalyzedEnergyPoint | null;
-  minimum: AnalyzedEnergyPoint | null;
+  peak: AnalyzedTemporalPoint | null;
+  minimum: AnalyzedTemporalPoint | null;
+  overallComparison?: NumericComparison;
   insights: readonly ChartInsight[];
 };
 
@@ -41,27 +53,54 @@ export type AnalyzedDeviceConsumption = DeviceConsumption & {
   percentage: number;
   rank: number;
   comparison: string;
+  periodComparison?: NumericComparison;
 };
 
 export type DeviceConsumptionAnalysis = {
   items: readonly AnalyzedDeviceConsumption[];
   totalKwh: number;
+  previousTotalKwh?: number;
+  overallComparison?: NumericComparison;
   insights: readonly ChartInsight[];
 };
-
-function getHour(time: string) {
-  const hour = Number.parseInt(time, 10);
-  return Number.isNaN(hour) ? 0 : hour;
-}
 
 function lowercaseFirst(value: string) {
   return value.charAt(0).toLocaleLowerCase("pt-BR") + value.slice(1);
 }
 
+function comparisonTone(comparison: NumericComparison): InsightTone {
+  if (comparison.significance === "relevant") {
+    return "attention";
+  }
+
+  return comparison.significance === "moderate" ? "brand" : "neutral";
+}
+
+function findExtremumIndex(
+  points: readonly AlignedTemporalPoint[],
+  mode: "maximum" | "minimum",
+) {
+  return points.reduce((currentIndex, point, index) => {
+    const current = points[currentIndex].currentKwh;
+    const candidate = point.currentKwh;
+    const shouldReplace =
+      mode === "maximum" ? candidate > current : candidate < current;
+
+    return shouldReplace ? index : currentIndex;
+  }, 0);
+}
+
 export function analyzeEnergyUsage(
-  data: readonly EnergyUsagePoint[],
+  currentDataset: DashboardDataset,
+  period: DashboardPeriodDefinition,
+  previousDataset?: DashboardDataset,
 ): EnergyUsageAnalysis {
-  if (data.length === 0) {
+  const alignedPoints = alignTemporalSeries(
+    currentDataset.energyUsage,
+    previousDataset?.energyUsage,
+  );
+
+  if (alignedPoints.length === 0) {
     return {
       points: [],
       totalKwh: 0,
@@ -72,99 +111,86 @@ export function analyzeEnergyUsage(
     };
   }
 
-  const totalKwh = data.reduce(
-    (total, point) => total + point.consumptionKwh,
-    0,
-  );
-  const averageKwh = totalKwh / data.length;
-  const peakIndex = data.reduce(
-    (currentIndex, point, index) =>
-      point.consumptionKwh > data[currentIndex].consumptionKwh
-        ? index
-        : currentIndex,
-    0,
-  );
-  const minimumIndex = data.reduce(
-    (currentIndex, point, index) =>
-      point.consumptionKwh < data[currentIndex].consumptionKwh
-        ? index
-        : currentIndex,
-    0,
-  );
+  const totalKwh = sumEnergy(currentDataset.energyUsage);
+  const previousTotalKwh = previousDataset
+    ? sumEnergy(previousDataset.energyUsage)
+    : undefined;
+  const averageKwh = totalKwh / alignedPoints.length;
+  const peakIndex = findExtremumIndex(alignedPoints, "maximum");
+  const minimumIndex = findExtremumIndex(alignedPoints, "minimum");
 
-  const points = data.map<AnalyzedEnergyPoint>((point, index) => ({
-    ...point,
-    index,
-    dailyPercentage: totalKwh === 0 ? 0 : point.consumptionKwh / totalKwh,
-    deltaFromPreviousKwh:
-      index === 0
-        ? null
-        : point.consumptionKwh - data[index - 1].consumptionKwh,
-    isPeak: index === peakIndex,
-    isMinimum: index === minimumIndex,
-  }));
+  const points = alignedPoints.map<AnalyzedTemporalPoint>((point, index) => {
+    const previousPoint = alignedPoints[index - 1];
+
+    return {
+      ...point,
+      periodPercentage: totalKwh === 0 ? 0 : point.currentKwh / totalKwh,
+      deltaFromPreviousPointKwh:
+        index === 0 ? null : point.currentKwh - previousPoint.currentKwh,
+      comparison:
+        point.previousKwh === undefined
+          ? undefined
+          : compareNumbers(
+              point.currentKwh,
+              point.previousKwh,
+              period.comparisonLabel,
+            ),
+      isPeak: index === peakIndex,
+      isMinimum: index === minimumIndex,
+    };
+  });
 
   const peak = points[peakIndex];
   const minimum = points[minimumIndex];
-  const insights: ChartInsight[] = [
-    {
-      id: "daily-peak",
-      title: `Maior consumo ocorreu às ${peak.time}.`,
-      description: `O pico foi ${formatChartEnergy(peak.consumptionKwh)} e representou ${formatDetailedPercentage(peak.consumptionKwh, totalKwh)} do consumo diário.`,
-      tone: "brand",
-    },
-  ];
+  const overallComparison =
+    previousTotalKwh === undefined
+      ? undefined
+      : compareNumbers(totalKwh, previousTotalKwh, period.comparisonLabel);
+  const insights: ChartInsight[] = [];
 
-  const eveningPoints = points.filter((point) => getHour(point.time) >= 18);
-  const eveningTotal = eveningPoints.reduce(
-    (total, point) => total + point.consumptionKwh,
-    0,
-  );
-
-  if (eveningPoints.length > 0) {
+  if (overallComparison) {
     insights.push({
-      id: "evening-concentration",
-      title: `${formatPercentage(eveningTotal, totalKwh)} do consumo ficou entre ${eveningPoints[0].time} e ${eveningPoints.at(-1)?.time}.`,
-      description: `Esse período concentrou ${formatChartEnergy(eveningTotal)} do cenário diário.`,
-      tone: "attention",
+      id: "period-comparison",
+      title: overallComparison.message,
+      description: `${formatChartEnergy(totalKwh)} no período atual, ante ${formatChartEnergy(previousTotalKwh ?? 0)} em ${period.comparisonLabel}.`,
+      tone: comparisonTone(overallComparison),
     });
   }
 
-  const biggestIncrease = points.slice(1).reduce<AnalyzedEnergyPoint | null>(
-    (current, point) => {
-      if (point.deltaFromPreviousKwh === null) {
-        return current;
-      }
+  insights.push({
+    id: "period-peak",
+    title:
+      currentDataset.granularity === "twoHours"
+        ? `Maior consumo ocorreu às ${peak.currentLabel}.`
+        : `Maior consumo ocorreu em ${peak.currentLabel}.`,
+    description: `O pico foi ${formatChartEnergy(peak.currentKwh)} e representou ${formatDetailedPercentage(peak.currentKwh, totalKwh)} do consumo do período.`,
+    tone: "brand",
+  });
 
-      if (
-        current === null ||
-        current.deltaFromPreviousKwh === null ||
-        point.deltaFromPreviousKwh > current.deltaFromPreviousKwh
-      ) {
-        return point;
-      }
-
-      return current;
-    },
-    null,
-  );
-
-  if (
-    biggestIncrease?.deltaFromPreviousKwh !== null &&
-    biggestIncrease?.deltaFromPreviousKwh !== undefined &&
-    biggestIncrease.deltaFromPreviousKwh > 0
-  ) {
-    const previousPoint = points[biggestIncrease.index - 1];
-    const increaseRatio =
-      previousPoint.consumptionKwh === 0
-        ? 0
-        : biggestIncrease.deltaFromPreviousKwh /
-          previousPoint.consumptionKwh;
+  if (currentDataset.granularity === "twoHours") {
+    const eveningPoints = points.filter(
+      (point) => Number.parseInt(point.axisLabel, 10) >= 18,
+    );
+    const eveningTotal = eveningPoints.reduce(
+      (total, point) => total + point.currentKwh,
+      0,
+    );
 
     insights.push({
-      id: "largest-increase",
-      title: `Consumo acelerou entre ${previousPoint.time} e ${biggestIncrease.time}.`,
-      description: `A alta foi de ${formatRatioPercentage(increaseRatio)}, passando de ${formatChartEnergy(previousPoint.consumptionKwh)} para ${formatChartEnergy(biggestIncrease.consumptionKwh)}.`,
+      id: "evening-concentration",
+      title: `${formatPercentage(eveningTotal, totalKwh)} do consumo ocorreu após as 18h.`,
+      description: `Esse trecho concentrou ${formatChartEnergy(eveningTotal)} do cenário diário demonstrativo.`,
+      tone: "attention",
+    });
+  } else {
+    const weekendTotal = points
+      .filter((point) => point.isWeekend)
+      .reduce((total, point) => total + point.currentKwh, 0);
+
+    insights.push({
+      id: "weekend-concentration",
+      title: `${formatPercentage(weekendTotal, totalKwh)} do consumo ocorreu em fins de semana.`,
+      description: `Os dias marcados como sábado ou domingo somaram ${formatChartEnergy(weekendTotal)}.`,
       tone: "neutral",
     });
   }
@@ -172,86 +198,109 @@ export function analyzeEnergyUsage(
   return {
     points,
     totalKwh,
+    previousTotalKwh,
     averageKwh,
     peak,
     minimum,
+    overallComparison,
     insights,
   };
 }
 
 export function analyzeDeviceConsumption(
-  data: readonly DeviceConsumption[],
+  current: readonly DeviceConsumption[],
+  previous: readonly DeviceConsumption[] | undefined,
+  previousLabel: string,
 ): DeviceConsumptionAnalysis {
-  if (data.length === 0) {
+  if (current.length === 0) {
     return { items: [], totalKwh: 0, insights: [] };
   }
 
-  const totalKwh = data.reduce(
+  const totalKwh = current.reduce(
     (total, item) => total + item.consumptionKwh,
     0,
   );
-  const averageKwh = totalKwh / data.length;
-  const rankedItems = [...data].sort(
+  const previousTotalKwh = previous?.reduce(
+    (total, item) => total + item.consumptionKwh,
+    0,
+  );
+  const averageKwh = totalKwh / current.length;
+  const rankedItems = [...current].sort(
     (first, second) => second.consumptionKwh - first.consumptionKwh,
   );
   const rankById = new Map(
     rankedItems.map((item, index) => [item.id, index + 1]),
   );
 
-  const items = data.map<AnalyzedDeviceConsumption>((item, index) => {
+  const items = current.map<AnalyzedDeviceConsumption>((item, index) => {
     const differenceFromAverage =
       averageKwh === 0
         ? 0
         : (item.consumptionKwh - averageKwh) / averageKwh;
-    const direction = differenceFromAverage >= 0 ? "acima" : "abaixo";
+    const previousItem = findPreviousDevice(item, previous);
 
     return {
       ...item,
       index,
       percentage: totalKwh === 0 ? 0 : item.consumptionKwh / totalKwh,
-      rank: rankById.get(item.id) ?? data.length,
-      comparison: `${formatRatioPercentage(Math.abs(differenceFromAverage))} ${direction} da média por dispositivo.`,
+      rank: rankById.get(item.id) ?? current.length,
+      comparison: `${formatRatioPercentage(Math.abs(differenceFromAverage))} ${differenceFromAverage >= 0 ? "acima" : "abaixo"} da média por dispositivo.`,
+      periodComparison: previousItem
+        ? compareNumbers(
+            item.consumptionKwh,
+            previousItem.consumptionKwh,
+            previousLabel,
+          )
+        : undefined,
     };
   });
 
   const topItem = rankedItems[0];
   const topTwo = rankedItems.slice(0, 2);
-  const topThree = rankedItems.slice(0, 3);
   const topTwoTotal = topTwo.reduce(
     (total, item) => total + item.consumptionKwh,
     0,
   );
-  const topThreeTotal = topThree.reduce(
-    (total, item) => total + item.consumptionKwh,
-    0,
-  );
-
+  const overallComparison =
+    previousTotalKwh === undefined
+      ? undefined
+      : compareNumbers(totalKwh, previousTotalKwh, previousLabel);
+  const largestDeviceChange = [...items]
+    .filter((item) => item.periodComparison)
+    .sort(
+      (first, second) =>
+        Math.abs(second.periodComparison?.absoluteChange ?? 0) -
+        Math.abs(first.periodComparison?.absoluteChange ?? 0),
+    )[0];
   const insights: ChartInsight[] = [
     {
       id: "device-leader",
       title: `${formatPercentage(topItem.consumptionKwh, totalKwh)} do consumo veio do ${lowercaseFirst(topItem.device)}.`,
-      description: `${formatEnergy(topItem.consumptionKwh)} colocaram o dispositivo na liderança do cenário.`,
+      description: `${formatEnergy(topItem.consumptionKwh)} colocaram o dispositivo na liderança do período.`,
       tone: "brand",
     },
-  ];
-
-  if (topTwo.length === 2) {
-    insights.push({
+    {
       id: "top-two-concentration",
       title: `Dois dispositivos concentraram ${formatPercentage(topTwoTotal, totalKwh)} do consumo.`,
       description: `${topTwo[0].device} e ${lowercaseFirst(topTwo[1].device)} somaram ${formatChartEnergy(topTwoTotal)}.`,
-      tone: "attention",
-    });
-  }
-
-  if (topThree.length === 3) {
-    insights.push({
-      id: "top-three-concentration",
-      title: `Os três maiores responderam por ${formatPercentage(topThreeTotal, totalKwh)} do total.`,
-      description: `Os demais grupos dividiram os ${formatPercentage(totalKwh - topThreeTotal, totalKwh)} restantes.`,
       tone: "neutral",
+    },
+  ];
+
+  if (largestDeviceChange?.periodComparison) {
+    insights.push({
+      id: "largest-device-change",
+      title: `${largestDeviceChange.device}: ${largestDeviceChange.periodComparison.message}`,
+      description: `Variação absoluta de ${formatSignedChartEnergy(largestDeviceChange.periodComparison.absoluteChange)} no comparativo.`,
+      tone: comparisonTone(largestDeviceChange.periodComparison),
     });
   }
 
-  return { items, totalKwh, insights };
+  return {
+    items,
+    totalKwh,
+    previousTotalKwh,
+    overallComparison,
+    insights,
+  };
 }

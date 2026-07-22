@@ -4,9 +4,9 @@ import type {
 } from "@/components/utils/dashboard-insights";
 
 const toneStyles: Record<InsightTone, string> = {
-  brand: "border-emerald-200 bg-emerald-50/70 text-emerald-950",
-  attention: "border-amber-200 bg-amber-50/70 text-amber-950",
-  neutral: "border-slate-200 bg-slate-50 text-slate-800",
+  brand: "border-emerald-200/80 bg-emerald-50/50 text-emerald-950",
+  attention: "border-amber-200/80 bg-amber-50/50 text-amber-950",
+  neutral: "border-slate-200/80 bg-slate-50/70 text-slate-800",
 };
 
 type ChartInsightsProps = {
@@ -22,14 +22,14 @@ export function ChartInsights({ insights, label }: ChartInsightsProps) {
   }
 
   return (
-    <section aria-label={label} className="space-y-2.5">
+    <section aria-label={label} className="space-y-2">
       <article
-        className={`rounded-xl border p-3.5 ${toneStyles[primaryInsight.tone]}`}
+        className={`rounded-xl border p-3 ${toneStyles[primaryInsight.tone]}`}
       >
         <p className="text-sm font-semibold leading-5">
           {primaryInsight.title}
         </p>
-        <p className="mt-1 text-xs leading-5 opacity-80">
+        <p className="mt-0.5 text-xs leading-4 opacity-80">
           {primaryInsight.description}
         </p>
       </article>
@@ -41,7 +41,7 @@ export function ChartInsights({ insights, label }: ChartInsightsProps) {
               key={insight.id}
               className={`rounded-xl border p-3 ${toneStyles[insight.tone]}`}
             >
-              <p className="text-xs font-semibold leading-5">{insight.title}</p>
+              <p className="text-xs font-semibold leading-4">{insight.title}</p>
               <p className="mt-0.5 text-xs leading-4 opacity-75">
                 {insight.description}
               </p>

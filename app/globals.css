@@ -16,6 +16,10 @@
   --chart-3: #2563eb;
   --chart-4: #7c3aed;
   --chart-5: #64748b;
+  --shadow-panel: 0 1px 2px rgb(15 23 42 / 4%),
+    0 8px 24px rgb(15 23 42 / 4%);
+  --shadow-panel-hover: 0 1px 2px rgb(15 23 42 / 5%),
+    0 12px 30px rgb(15 23 42 / 7%);
   --shadow-floating: 0 12px 28px rgb(15 23 42 / 12%);
   --motion-duration-enter: 300ms;
   --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);

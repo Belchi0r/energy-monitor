@@ -14,7 +14,7 @@ import type {
   AlertCategory,
   AlertSeverity,
   DashboardAlert,
-} from "@/components/types/dashboard-alerts";
+} from "@/lib/dashboard/alert-types";
 
 const severityConfig: Record<
   AlertSeverity,

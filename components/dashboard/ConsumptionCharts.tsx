@@ -1,10 +1,10 @@
 import { DeviceDistributionChart } from "@/components/dashboard/charts/DeviceDistributionChart";
 import { EnergyLineChart } from "@/components/dashboard/charts/EnergyLineChart";
-import type { DashboardPeriodDefinition } from "@/components/types/dashboard";
+import type { DashboardPeriodDefinition } from "@/lib/dashboard/types";
 import type {
   DeviceConsumptionAnalysis,
   EnergyUsageAnalysis,
-} from "@/components/utils/dashboard-insights";
+} from "@/lib/dashboard/analytics";
 import { Panel } from "@/components/ui/Panel";
 
 type ConsumptionChartsProps = {

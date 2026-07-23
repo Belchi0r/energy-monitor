@@ -1,7 +1,10 @@
 import type {
   DashboardMetric,
+  DashboardPeriod,
   MetricFormat,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
+
+const DASHBOARD_TIME_ZONE = "America/Sao_Paulo";
 
 const integerFormatter = new Intl.NumberFormat("pt-BR", {
   maximumFractionDigits: 0,
@@ -47,10 +50,92 @@ const signedPercentageFormatter = new Intl.NumberFormat("pt-BR", {
   signDisplay: "exceptZero",
 });
 
+const timeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const weekdayFormatter = new Intl.DateTimeFormat("pt-BR", {
+  weekday: "short",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const numericDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const dayFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const shortMonthFormatter = new Intl.DateTimeFormat("pt-BR", {
+  month: "short",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const monthDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "short",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
+const accessibleDateFormatter = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "full",
+  timeStyle: "short",
+  timeZone: DASHBOARD_TIME_ZONE,
+});
+
 export type FormattedMetricValue = {
   value: string;
   unit?: string;
 };
+
+export type DashboardEventTimestamp = {
+  timelineLabel: string;
+  tableLabel: string;
+  accessibleLabel: string;
+};
+
+function uppercaseFirst(value: string) {
+  return value.charAt(0).toLocaleUpperCase("pt-BR") + value.slice(1);
+}
+
+export function formatDashboardEventTimestamp(
+  occurredAtIso: string,
+  period: DashboardPeriod,
+): DashboardEventTimestamp {
+  const date = new Date(occurredAtIso);
+  const timeLabel = timeFormatter.format(date);
+  const weekdayDateLabel = `${uppercaseFirst(weekdayFormatter.format(date))}, ${numericDateFormatter.format(date)}`;
+  const shortMonthDateLabel = `${dayFormatter.format(date)} ${shortMonthFormatter.format(date)}`;
+
+  if (period === "today") {
+    return {
+      timelineLabel: timeLabel,
+      tableLabel: `Hoje, ${timeLabel}`,
+      accessibleLabel: accessibleDateFormatter.format(date),
+    };
+  }
+
+  if (period === "7d") {
+    return {
+      timelineLabel: weekdayDateLabel,
+      tableLabel: `${weekdayDateLabel}, ${timeLabel}`,
+      accessibleLabel: accessibleDateFormatter.format(date),
+    };
+  }
+
+  return {
+    timelineLabel: monthDateFormatter.format(date),
+    tableLabel: `${shortMonthDateLabel}, ${timeLabel}`,
+    accessibleLabel: accessibleDateFormatter.format(date),
+  };
+}
 
 export function formatDecimal(value: number) {
   return decimalFormatter.format(value);

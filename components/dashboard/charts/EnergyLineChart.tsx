@@ -18,8 +18,8 @@ import { ComparisonLegend } from "@/components/dashboard/charts/ComparisonLegend
 import { EnergyChartPlot } from "@/components/dashboard/charts/EnergyChartPlot";
 import { EnergyChartPoint } from "@/components/dashboard/charts/EnergyChartPoint";
 import { EnergyChartSummary } from "@/components/dashboard/charts/EnergyChartSummary";
-import type { EnergyUsageAnalysis } from "@/components/utils/dashboard-insights";
-import { formatChartEnergy } from "@/components/utils/formatters";
+import type { EnergyUsageAnalysis } from "@/lib/dashboard/analytics";
+import { formatChartEnergy } from "@/lib/dashboard/formatters";
 
 type EnergyLineChartProps = {
   analysis: EnergyUsageAnalysis;

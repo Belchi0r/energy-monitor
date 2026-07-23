@@ -4,13 +4,13 @@ import type {
   DashboardPeriodDefinition,
   DeviceConsumption,
   NumericComparison,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
 import {
   alignTemporalSeries,
   compareNumbers,
   findPreviousDevice,
   sumEnergy,
-} from "@/components/utils/dashboard-comparison";
+} from "@/lib/dashboard/comparison";
 import {
   formatChartEnergy,
   formatDetailedPercentage,
@@ -18,7 +18,7 @@ import {
   formatPercentage,
   formatRatioPercentage,
   formatSignedChartEnergy,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 export type InsightTone = "brand" | "neutral" | "attention";
 

@@ -3,11 +3,11 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import type {
   MetricFormat,
   NumericComparison,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
 import {
   formatMetricNumber,
   formatSignedRatioPercentage,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 type MetricTrendProps = {
   comparison: NumericComparison;

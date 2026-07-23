@@ -21,11 +21,11 @@ import { DeviceChartCenter } from "@/components/dashboard/charts/DeviceChartCent
 import { DeviceChartLegend } from "@/components/dashboard/charts/DeviceChartLegend";
 import { DeviceChartSector } from "@/components/dashboard/charts/DeviceChartSector";
 import { DeviceDistributionTooltip } from "@/components/dashboard/charts/DeviceDistributionTooltip";
-import type { DeviceConsumptionAnalysis } from "@/components/utils/dashboard-insights";
+import type { DeviceConsumptionAnalysis } from "@/lib/dashboard/analytics";
 import {
   formatEnergy,
   formatPercentage,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 const chartColors = [
   "var(--chart-1)",

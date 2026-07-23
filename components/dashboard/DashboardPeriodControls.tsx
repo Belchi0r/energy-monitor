@@ -5,7 +5,7 @@ import { useTransition } from "react";
 
 import { PeriodComparisonControl } from "@/components/dashboard/PeriodComparisonControl";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
-import type { DashboardPeriod } from "@/components/types/dashboard";
+import type { DashboardPeriod } from "@/lib/dashboard/types";
 import { buildDashboardUrl } from "@/components/utils/dashboard-period";
 
 type DashboardPeriodControlsProps = {

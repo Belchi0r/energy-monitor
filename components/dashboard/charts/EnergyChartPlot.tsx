@@ -18,11 +18,11 @@ import { EnergyLineTooltip } from "@/components/dashboard/charts/EnergyLineToolt
 import type {
   AnalyzedTemporalPoint,
   EnergyUsageAnalysis,
-} from "@/components/utils/dashboard-insights";
+} from "@/lib/dashboard/analytics";
 import {
   formatChartEnergy,
   formatDecimal,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 type EnergyChartPlotProps = {
   analysis: EnergyUsageAnalysis;

@@ -1,4 +1,4 @@
-import type { DashboardDataset } from "@/components/types/dashboard";
+import type { DashboardDataset } from "@/lib/dashboard/types";
 
 export const todayDataset = {
   id: "today",

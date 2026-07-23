@@ -1,13 +1,13 @@
 import { motion, useReducedMotion } from "motion/react";
 import type { TooltipContentProps } from "recharts";
 
-import type { AnalyzedTemporalPoint } from "@/components/utils/dashboard-insights";
+import type { AnalyzedTemporalPoint } from "@/lib/dashboard/analytics";
 import {
   formatChartEnergy,
   formatDetailedPercentage,
   formatSignedChartEnergy,
   formatSignedRatioPercentage,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 type EnergyLineTooltipProps = TooltipContentProps & {
   points: readonly AnalyzedTemporalPoint[];

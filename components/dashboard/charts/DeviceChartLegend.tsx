@@ -4,12 +4,12 @@ import {
   Minus,
 } from "lucide-react";
 
-import type { AnalyzedDeviceConsumption } from "@/components/utils/dashboard-insights";
+import type { AnalyzedDeviceConsumption } from "@/lib/dashboard/analytics";
 import {
   formatEnergy,
   formatPercentage,
   formatSignedRatioPercentage,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 type DeviceChartLegendProps = {
   items: readonly AnalyzedDeviceConsumption[];

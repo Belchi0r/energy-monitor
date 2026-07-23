@@ -9,8 +9,8 @@ import {
   useTransform,
 } from "motion/react";
 
-import type { MetricFormat } from "@/components/types/dashboard";
-import { formatMetricNumber } from "@/components/utils/formatters";
+import type { MetricFormat } from "@/lib/dashboard/types";
+import { formatMetricNumber } from "@/lib/dashboard/formatters";
 
 type AnimatedNumberProps = {
   value: number;

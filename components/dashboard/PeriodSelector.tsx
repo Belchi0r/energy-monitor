@@ -1,4 +1,4 @@
-import type { DashboardPeriod } from "@/components/types/dashboard";
+import type { DashboardPeriod } from "@/lib/dashboard/types";
 import { dashboardPeriodDefinitions } from "@/components/utils/dashboard-period";
 
 type PeriodSelectorProps = {

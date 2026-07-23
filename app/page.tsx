@@ -5,7 +5,6 @@ import { DashboardPeriodHeader } from "@/components/dashboard/DashboardPeriodHea
 import { IntelligenceSection } from "@/components/dashboard/IntelligenceSection";
 import { MetricsSection } from "@/components/dashboard/MetricsSection";
 import { RecentActivityTable } from "@/components/dashboard/RecentActivityTable";
-import { getDashboardViewData } from "@/components/data/dashboard";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import {
@@ -13,6 +12,7 @@ import {
   parseDashboardSearchParams,
   type DashboardSearchParams,
 } from "@/components/utils/dashboard-period";
+import { dashboardService } from "@/lib/dashboard/application";
 
 type HomeProps = {
   searchParams: Promise<DashboardSearchParams>;
@@ -25,10 +25,10 @@ export default async function Home({ searchParams }: HomeProps) {
     redirect(buildDashboardUrl("today", routeState.compare));
   }
 
-  const view = getDashboardViewData(
-    routeState.period,
-    routeState.compare,
-  );
+  const view = await dashboardService.getDashboard({
+    period: routeState.period,
+    compare: routeState.compare,
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -60,6 +60,7 @@ export default async function Home({ searchParams }: HomeProps) {
             <RecentActivityTable
               activities={view.activities}
               activityTimeLabel={view.definition.activityTimeLabel}
+              period={view.period}
               periodLabel={view.definition.label}
             />
           </div>

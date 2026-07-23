@@ -1,11 +1,11 @@
 import type { KeyboardEvent } from "react";
 import type { DotItemDotProps } from "recharts";
 
-import type { AnalyzedTemporalPoint } from "@/components/utils/dashboard-insights";
+import type { AnalyzedTemporalPoint } from "@/lib/dashboard/analytics";
 import {
   formatChartEnergy,
   formatDetailedPercentage,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 type EnergyChartPointProps = DotItemDotProps & {
   point: AnalyzedTemporalPoint;

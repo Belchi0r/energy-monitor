@@ -1,7 +1,7 @@
 import type {
   ChartInsight,
   InsightTone,
-} from "@/components/utils/dashboard-insights";
+} from "@/lib/dashboard/analytics";
 
 const toneStyles: Record<InsightTone, string> = {
   brand: "border-emerald-200/80 bg-emerald-50/50 text-emerald-950",

@@ -15,7 +15,7 @@ import {
 import type {
   DashboardMetric,
   MetricId,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
 
 const metricIcons: Record<MetricId, LucideIcon> = {
   currentPower: Gauge,

@@ -1,5 +1,5 @@
-import type { EnergyUsageAnalysis } from "@/components/utils/dashboard-insights";
-import { formatChartEnergy } from "@/components/utils/formatters";
+import type { EnergyUsageAnalysis } from "@/lib/dashboard/analytics";
+import { formatChartEnergy } from "@/lib/dashboard/formatters";
 
 type EnergyChartSummaryProps = Pick<
   EnergyUsageAnalysis,

@@ -1,5 +1,5 @@
 import { AlertCard } from "@/components/dashboard/AlertCard";
-import type { DashboardAlert } from "@/components/types/dashboard-alerts";
+import type { DashboardAlert } from "@/lib/dashboard/alert-types";
 import { Panel } from "@/components/ui/Panel";
 
 type AlertPanelProps = {

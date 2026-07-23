@@ -5,7 +5,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import type { ActivityStatus } from "@/components/types/dashboard";
+import type { ActivityStatus } from "@/lib/dashboard/types";
 
 const statusConfig: Record<
   ActivityStatus,

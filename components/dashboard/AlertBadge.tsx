@@ -1,4 +1,4 @@
-import type { AlertSeverity } from "@/components/types/dashboard-alerts";
+import type { AlertSeverity } from "@/lib/dashboard/alert-types";
 
 const severityConfig: Record<
   AlertSeverity,

@@ -1,7 +1,7 @@
 import { BadgeInfo } from "lucide-react";
 
 import { DashboardPeriodControls } from "@/components/dashboard/DashboardPeriodControls";
-import type { DashboardViewData } from "@/components/data/dashboard";
+import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
 type DashboardPeriodHeaderProps = {
   view: DashboardViewData;

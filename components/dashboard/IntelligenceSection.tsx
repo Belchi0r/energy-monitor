@@ -1,6 +1,6 @@
 import { AlertPanel } from "@/components/dashboard/AlertPanel";
 import { Timeline } from "@/components/dashboard/Timeline";
-import type { DashboardAlert } from "@/components/types/dashboard-alerts";
+import type { DashboardAlert } from "@/lib/dashboard/alert-types";
 import type { DashboardTimeline } from "@/lib/dashboard/timeline";
 
 type IntelligenceSectionProps = {

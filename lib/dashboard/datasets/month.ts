@@ -1,7 +1,7 @@
 import type {
   DashboardDataset,
   TemporalUsagePoint,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
 
 const currentWeekdays = ["Ter", "Qua", "Qui", "Sex", "Sáb", "Dom", "Seg"] as const;
 const previousWeekdays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;

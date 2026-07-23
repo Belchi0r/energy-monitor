@@ -8,8 +8,10 @@ import {
 
 import type {
   ActivityStatus,
+  DashboardPeriod,
   RecentActivity,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
+import { formatDashboardEventTimestamp } from "@/lib/dashboard/formatters";
 import { Panel } from "@/components/ui/Panel";
 
 const statusConfig: Record<
@@ -36,6 +38,7 @@ const statusConfig: Record<
 type RecentActivityTableProps = {
   activities: readonly RecentActivity[];
   activityTimeLabel: string;
+  period: DashboardPeriod;
   periodLabel: string;
 };
 
@@ -56,15 +59,24 @@ function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
 export function RecentActivityTable({
   activities,
   activityTimeLabel,
+  period,
   periodLabel,
 }: RecentActivityTableProps) {
+  const formattedActivities = activities.map((activity) => ({
+    ...activity,
+    displayedOccurredAt: formatDashboardEventTimestamp(
+      activity.occurredAtIso,
+      period,
+    ).tableLabel,
+  }));
+
   return (
     <Panel
       title="Atividade recente"
       description={`Até cinco eventos simulados em ${periodLabel.toLocaleLowerCase("pt-BR")}`}
     >
       <ul className="space-y-3 md:hidden" aria-label="Atividades simuladas recentes">
-        {activities.map((activity) => (
+        {formattedActivities.map((activity) => (
           <li
             key={activity.id}
             className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4"
@@ -78,7 +90,7 @@ export function RecentActivityTable({
             </p>
             <p className="mt-3 flex items-center gap-1.5 text-xs font-medium tabular-nums text-slate-500">
               <Clock3 aria-hidden="true" className="size-3.5" />
-              {activityTimeLabel} simulado: {activity.occurredAt}
+              {activityTimeLabel} simulado: {activity.displayedOccurredAt}
             </p>
           </li>
         ))}
@@ -106,7 +118,7 @@ export function RecentActivityTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white">
-            {activities.map((activity) => (
+            {formattedActivities.map((activity) => (
               <tr
                 key={activity.id}
                 className="transition-colors duration-150 hover:bg-slate-50 motion-reduce:transition-none"
@@ -121,7 +133,7 @@ export function RecentActivityTable({
                   {activity.event}
                 </td>
                 <td className="px-5 py-4 text-sm font-medium tabular-nums text-slate-600">
-                  {activity.occurredAt}
+                  {activity.displayedOccurredAt}
                 </td>
                 <td className="px-5 py-4">
                   <ActivityStatusBadge status={activity.status} />

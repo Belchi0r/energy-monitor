@@ -5,7 +5,7 @@ import { MetricTrend } from "@/components/dashboard/MetricTrend";
 import type {
   MetricFormat,
   NumericComparison,
-} from "@/components/types/dashboard";
+} from "@/lib/dashboard/types";
 
 export type MetricCardProps = {
   title: string;

@@ -6,8 +6,8 @@ import type {
   TemporalUsagePoint,
   VariationDirection,
   VariationSignificance,
-} from "@/components/types/dashboard";
-import { formatRatioPercentage } from "@/components/utils/formatters";
+} from "@/lib/dashboard/types";
+import { formatRatioPercentage } from "@/lib/dashboard/formatters";
 
 const STABLE_THRESHOLD = 0.02;
 const RELEVANT_THRESHOLD = 0.1;

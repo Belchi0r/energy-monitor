@@ -1,10 +1,19 @@
 import type {
   DashboardDataset,
   DashboardDatasetId,
-} from "@/components/types/dashboard";
-import { last30DaysDataset, previous30DaysDataset } from "./month";
-import { todayDataset, yesterdayDataset } from "./today";
-import { last7DaysDataset, previous7DaysDataset } from "./week";
+} from "@/lib/dashboard/types";
+import {
+  last30DaysDataset,
+  previous30DaysDataset,
+} from "@/lib/dashboard/datasets/month";
+import {
+  todayDataset,
+  yesterdayDataset,
+} from "@/lib/dashboard/datasets/today";
+import {
+  last7DaysDataset,
+  previous7DaysDataset,
+} from "@/lib/dashboard/datasets/week";
 
 export const dashboardDatasets = {
   today: todayDataset,

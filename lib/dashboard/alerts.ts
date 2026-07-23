@@ -1,18 +1,18 @@
-import type { DashboardPeriod } from "@/components/types/dashboard";
+import type { DashboardPeriod } from "@/lib/dashboard/types";
 import type {
   AlertSeverity,
   DashboardAlert,
-} from "@/components/types/dashboard-alerts";
+} from "@/lib/dashboard/alert-types";
 import type {
   AnalyzedDeviceConsumption,
   DeviceConsumptionAnalysis,
   EnergyUsageAnalysis,
-} from "@/components/utils/dashboard-insights";
+} from "@/lib/dashboard/analytics";
 import {
   formatChartEnergy,
   formatDetailedPercentage,
   formatSignedChartEnergy,
-} from "@/components/utils/formatters";
+} from "@/lib/dashboard/formatters";
 
 const PEAK_THRESHOLD = 0.3;
 const HIGH_PEAK_THRESHOLD = 0.5;

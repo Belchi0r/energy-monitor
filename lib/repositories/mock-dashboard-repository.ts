@@ -10,6 +10,10 @@ Object.values(dashboardDatasets).forEach(validateDashboardDataset);
 
 export class MockDashboardRepository implements DashboardRepository {
   async getDataset(id: DashboardDatasetId) {
+    if (!Object.hasOwn(dashboardDatasets, id)) {
+      throw new Error(`Dataset da dashboard não encontrado: "${id}".`);
+    }
+
     return getDashboardDataset(id);
   }
 }

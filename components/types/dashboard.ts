@@ -75,6 +75,7 @@ export type RecentActivity = {
   device: string;
   event: string;
   occurredAt: string;
+  occurredAtIso: string;
   status: ActivityStatus;
 };
 

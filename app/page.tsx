@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { ConsumptionCharts } from "@/components/dashboard/ConsumptionCharts";
 import { DashboardPeriodHeader } from "@/components/dashboard/DashboardPeriodHeader";
+import { IntelligenceSection } from "@/components/dashboard/IntelligenceSection";
 import { MetricsSection } from "@/components/dashboard/MetricsSection";
 import { RecentActivityTable } from "@/components/dashboard/RecentActivityTable";
 import { getDashboardViewData } from "@/components/data/dashboard";
@@ -51,6 +52,10 @@ export default async function Home({ searchParams }: HomeProps) {
               definition={view.definition}
               currentLabel={view.currentLabel}
               previousLabel={view.previousLabel}
+            />
+            <IntelligenceSection
+              alerts={view.alerts}
+              timeline={view.timeline}
             />
             <RecentActivityTable
               activities={view.activities}

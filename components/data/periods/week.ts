@@ -24,11 +24,14 @@ export const last7DaysDataset = {
     { id: "others", device: "Outros", description: "Demais equipamentos agrupados", consumptionKwh: 8.1 },
   ],
   recentActivities: [
-    { id: "week-1", device: "Ar-condicionado", event: "Maior consumo semanal registrado", occurredAt: "Hoje, 14:32", status: "attention" },
-    { id: "week-2", device: "Chuveiro elétrico", event: "Ciclo de aquecimento encerrado", occurredAt: "Terça, 19:18", status: "completed" },
-    { id: "week-3", device: "Geladeira", event: "Operação contínua dentro do padrão", occurredAt: "Segunda, 12:47", status: "active" },
-    { id: "week-4", device: "Máquina de lavar", event: "Segundo ciclo semanal finalizado", occurredAt: "Domingo, 11:05", status: "completed" },
-    { id: "week-5", device: "Iluminação externa", event: "Rotina noturna ativada", occurredAt: "Sábado, 18:12", status: "active" },
+    { id: "week-1", device: "Ar-condicionado", event: "Maior consumo semanal registrado", occurredAt: "Hoje, 14:32", occurredAtIso: "2026-07-22T14:32:00-03:00", status: "attention" },
+    { id: "week-2", device: "Chuveiro elétrico", event: "Ciclo de aquecimento encerrado", occurredAt: "Terça, 19:18", occurredAtIso: "2026-07-21T19:18:00-03:00", status: "completed" },
+    { id: "week-3", device: "Geladeira", event: "Operação contínua dentro do padrão", occurredAt: "Segunda, 12:47", occurredAtIso: "2026-07-20T12:47:00-03:00", status: "active" },
+    { id: "week-4", device: "Máquina de lavar", event: "Segundo ciclo semanal finalizado", occurredAt: "Domingo, 11:05", occurredAtIso: "2026-07-19T11:05:00-03:00", status: "completed" },
+    { id: "week-5", device: "Iluminação externa", event: "Rotina noturna ativada", occurredAt: "Sábado, 18:12", occurredAtIso: "2026-07-18T18:12:00-03:00", status: "active" },
+    { id: "week-6", device: "Forno elétrico", event: "Preparo concluído", occurredAt: "Sexta, 20:08", occurredAtIso: "2026-07-17T20:08:00-03:00", status: "completed" },
+    { id: "week-7", device: "Ar-condicionado", event: "Rotina econômica ativada", occurredAt: "Quinta, 17:25", occurredAtIso: "2026-07-16T17:25:00-03:00", status: "active" },
+    { id: "week-8", device: "Sistema", event: "Análise semanal inicializada", occurredAt: "Quinta, 00:10", occurredAtIso: "2026-07-16T00:10:00-03:00", status: "completed" },
   ],
 } as const satisfies DashboardDataset;
 

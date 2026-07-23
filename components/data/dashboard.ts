@@ -4,6 +4,7 @@ import type {
   DashboardPeriod,
   DashboardPeriodDefinition,
 } from "@/components/types/dashboard";
+import type { DashboardAlert } from "@/components/types/dashboard-alerts";
 import {
   compareNumbers,
   sumEnergy,
@@ -16,6 +17,11 @@ import {
   type EnergyUsageAnalysis,
 } from "@/components/utils/dashboard-insights";
 import { getPeriodDefinition } from "@/components/utils/dashboard-period";
+import { generateDashboardAlerts } from "@/lib/dashboard/alerts";
+import {
+  buildDashboardTimeline,
+  type DashboardTimeline,
+} from "@/lib/dashboard/timeline";
 
 const SIMULATED_TARIFF_PER_KWH = 0.84;
 
@@ -30,6 +36,8 @@ export type DashboardViewData = {
   metrics: readonly DashboardMetric[];
   temporalAnalysis: EnergyUsageAnalysis;
   deviceAnalysis: DeviceConsumptionAnalysis;
+  alerts: readonly DashboardAlert[];
+  timeline: DashboardTimeline;
   activities: ReturnType<typeof getDashboardDataset>["recentActivities"];
   transitionKey: string;
 };
@@ -156,6 +164,16 @@ export function getDashboardViewData(
   const previous = compare
     ? getDashboardDataset(definition.previousDatasetId)
     : undefined;
+  const temporalAnalysis = analyzeEnergyUsage(
+    current,
+    definition,
+    previous,
+  );
+  const deviceAnalysis = analyzeDeviceConsumption(
+    current.deviceConsumption,
+    previous?.deviceConsumption,
+    definition.comparisonLabel,
+  );
 
   return {
     period,
@@ -164,11 +182,18 @@ export function getDashboardViewData(
     currentLabel: current.label,
     previousLabel: previous?.label,
     metrics: buildMetrics(period, compare, definition),
-    temporalAnalysis: analyzeEnergyUsage(current, definition, previous),
-    deviceAnalysis: analyzeDeviceConsumption(
-      current.deviceConsumption,
-      previous?.deviceConsumption,
-      definition.comparisonLabel,
+    temporalAnalysis,
+    deviceAnalysis,
+    alerts: generateDashboardAlerts({
+      period,
+      currentLabel: current.label,
+      temporalAnalysis,
+      deviceAnalysis,
+    }),
+    timeline: buildDashboardTimeline(
+      current.recentActivities,
+      period,
+      current.label,
     ),
     activities: current.recentActivities.slice(0, 5),
     transitionKey: `${period}-${compare ? "comparison" : "current"}`,

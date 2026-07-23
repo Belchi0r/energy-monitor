@@ -30,11 +30,14 @@ export const todayDataset = {
     { id: "others", device: "Outros", description: "Demais equipamentos agrupados", consumptionKwh: 0.9 },
   ],
   recentActivities: [
-    { id: "today-1", device: "Ar-condicionado", event: "Ligado no modo econômico", occurredAt: "Hoje, 14:32", status: "active" },
-    { id: "today-2", device: "Chuveiro elétrico", event: "Ciclo de aquecimento encerrado", occurredAt: "Hoje, 13:18", status: "completed" },
-    { id: "today-3", device: "Geladeira", event: "Pico de consumo identificado", occurredAt: "Hoje, 12:47", status: "attention" },
-    { id: "today-4", device: "Máquina de lavar", event: "Ciclo de lavagem finalizado", occurredAt: "Hoje, 11:05", status: "completed" },
-    { id: "today-5", device: "Iluminação da sala", event: "Rotina de iluminação ativada", occurredAt: "Hoje, 08:12", status: "active" },
+    { id: "today-1", device: "Ar-condicionado", event: "Ligado no modo econômico", occurredAt: "Hoje, 14:32", occurredAtIso: "2026-07-22T14:32:00-03:00", status: "active" },
+    { id: "today-2", device: "Chuveiro elétrico", event: "Ciclo de aquecimento encerrado", occurredAt: "Hoje, 13:18", occurredAtIso: "2026-07-22T13:18:00-03:00", status: "completed" },
+    { id: "today-3", device: "Geladeira", event: "Pico de consumo identificado", occurredAt: "Hoje, 12:47", occurredAtIso: "2026-07-22T12:47:00-03:00", status: "attention" },
+    { id: "today-4", device: "Máquina de lavar", event: "Ciclo de lavagem finalizado", occurredAt: "Hoje, 11:05", occurredAtIso: "2026-07-22T11:05:00-03:00", status: "completed" },
+    { id: "today-5", device: "Iluminação da sala", event: "Rotina de iluminação ativada", occurredAt: "Hoje, 08:12", occurredAtIso: "2026-07-22T08:12:00-03:00", status: "active" },
+    { id: "today-6", device: "Cafeteira", event: "Aquecimento matinal concluído", occurredAt: "Hoje, 06:48", occurredAtIso: "2026-07-22T06:48:00-03:00", status: "completed" },
+    { id: "today-7", device: "Geladeira", event: "Ciclo automático iniciado", occurredAt: "Hoje, 04:20", occurredAtIso: "2026-07-22T04:20:00-03:00", status: "active" },
+    { id: "today-8", device: "Sistema", event: "Leitura diária inicializada", occurredAt: "Hoje, 00:30", occurredAtIso: "2026-07-22T00:30:00-03:00", status: "completed" },
   ],
 } as const satisfies DashboardDataset;
 

@@ -1,6 +1,7 @@
-import { MockDashboardRepository } from "@/lib/repositories/mock-dashboard-repository";
+import { prisma } from "@/lib/prisma";
+import { PrismaDashboardRepository } from "@/lib/repositories/prisma-dashboard-repository";
 import { DashboardService } from "@/lib/services/dashboard-service";
 
-const dashboardRepository = new MockDashboardRepository();
+const dashboardRepository = new PrismaDashboardRepository(prisma);
 
 export const dashboardService = new DashboardService(dashboardRepository);

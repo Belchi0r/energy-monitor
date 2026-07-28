@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model DashboardDataset {
+  id            String @id
+  label         String
+  rangeLabel    String
+  daysCount     Int
+  granularity   String
+  currentPowerW Float?
+  activeDevices Int
+
+  energyUsage EnergyUsagePoint[]
+  deviceUsage DeviceConsumption[]
+  activities  RecentActivity[]
+}
+
+model EnergyUsagePoint {
+  id             String
+  datasetId      String
+  label          String
+  shortLabel     String
+  consumptionKwh Float
+  isWeekend      Boolean?
+
+  dataset DashboardDataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@id([datasetId, id])
+}
+
+model DeviceConsumption {
+  id             String
+  datasetId      String
+  device         String
+  description    String
+  consumptionKwh Float
+
+  dataset DashboardDataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@id([datasetId, id])
+}
+
+model RecentActivity {
+  id            String
+  datasetId     String
+  device        String
+  event         String
+  occurredAt    String
+  occurredAtIso DateTime
+  status        String
+
+  dataset DashboardDataset @relation(fields: [datasetId], references: [id], onDelete: Cascade)
+
+  @@id([datasetId, id])
+}

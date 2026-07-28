@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import {
   afterEach,
+  beforeEach,
   describe,
   expect,
   it,
@@ -8,12 +9,27 @@ import {
 } from "vitest";
 
 import { GET } from "@/app/api/dashboard/route";
-import { dashboardService } from "@/lib/dashboard/application";
 import type { DashboardPeriod } from "@/lib/dashboard/types";
+import { MockDashboardRepository } from "@/lib/repositories/mock-dashboard-repository";
+import { DashboardService } from "@/lib/services/dashboard-service";
 import type {
   DashboardApiErrorResponse,
   DashboardApiSuccessResponse,
 } from "@/lib/types/dashboard-api";
+
+const { getDashboardMock } = vi.hoisted(() => ({
+  getDashboardMock: vi.fn<DashboardService["getDashboard"]>(),
+}));
+
+vi.mock("@/lib/dashboard/application", () => ({
+  dashboardService: {
+    getDashboard: getDashboardMock,
+  },
+}));
+
+const mockBackedDashboardService = new DashboardService(
+  new MockDashboardRepository(),
+);
 
 type SuccessCase = {
   name: string;
@@ -88,7 +104,15 @@ function createRequest(query = "") {
   );
 }
 
+beforeEach(() => {
+  getDashboardMock.mockReset();
+  getDashboardMock.mockImplementation((query) =>
+    mockBackedDashboardService.getDashboard(query),
+  );
+});
+
 afterEach(() => {
+  getDashboardMock.mockReset();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });
@@ -148,7 +172,7 @@ describe("GET /api/dashboard", () => {
   );
 
   it("retorna HTTP 500 sem expor detalhes internos", async () => {
-    vi.spyOn(dashboardService, "getDashboard").mockRejectedValueOnce(
+    getDashboardMock.mockRejectedValueOnce(
       new Error("falha interna sensível"),
     );
 

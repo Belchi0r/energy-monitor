@@ -59,7 +59,7 @@ describe("analyzeEnergyUsage", () => {
     expect(analysis.overallComparison).toEqual(
       expect.objectContaining({
         direction: "increase",
-        previousLabel: "ontem",
+        previousLabel: "ontem (simulado)",
       }),
     );
     expect(
@@ -158,5 +158,17 @@ describe("analyzeDeviceConsumption", () => {
 
     expect(secondResult.insights).toEqual(firstResult.insights);
     expect(secondResult.items).toEqual(firstResult.items);
+  });
+
+  it("mantém a análise válida quando existe somente um dispositivo", () => {
+    const analysis = analyzeDeviceConsumption(
+      [dashboardDatasets.today.deviceConsumption[0]],
+      undefined,
+      "ontem",
+    );
+
+    expect(analysis.items).toHaveLength(1);
+    expect(analysis.insights).toHaveLength(1);
+    expect(analysis.insights[0].id).toBe("device-leader");
   });
 });

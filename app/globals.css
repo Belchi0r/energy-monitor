@@ -47,13 +47,29 @@
   }
 }
 
+@keyframes score-meter-enter {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .dashboard-card-enter {
   animation: dashboard-card-enter var(--motion-duration-enter)
     var(--motion-ease-out) both;
 }
 
+.score-meter-enter {
+  animation: score-meter-enter 350ms var(--motion-ease-out) both;
+  transform-origin: left center;
+}
+
 html {
   background: var(--background);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -74,7 +90,12 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dashboard-card-enter {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .dashboard-card-enter,
+  .score-meter-enter {
     animation: none;
   }
 }

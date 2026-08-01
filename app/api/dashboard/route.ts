@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { dashboardService } from "@/lib/dashboard/application";
+import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
 import { dashboardQuerySchema } from "@/lib/schemas/dashboard-query-schema";
 import type {
   DashboardApiErrorDetail,
@@ -44,7 +45,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const data = await dashboardService.getDashboard(result.data);
+    const tariffBrlPerKwh = await getEffectiveEnergyTariff();
+    const data = await dashboardService.getDashboard(
+      result.data,
+      tariffBrlPerKwh,
+    );
     const response: DashboardApiSuccessResponse = {
       data,
       meta: {

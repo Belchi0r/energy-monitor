@@ -75,74 +75,94 @@ export function RecentActivityTable({
       title="Atividade recente"
       description={`Até cinco eventos simulados em ${periodLabel.toLocaleLowerCase("pt-BR")}`}
     >
-      <ul className="space-y-3 md:hidden" aria-label="Atividades simuladas recentes">
-        {formattedActivities.map((activity) => (
-          <li
-            key={activity.id}
-            className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4"
+      {formattedActivities.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-8 text-center">
+          <p className="text-sm font-semibold text-slate-900">
+            Nenhuma atividade encontrada
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Selecione outro dispositivo para consultar os registros
+            demonstrativos.
+          </p>
+        </div>
+      ) : (
+        <>
+          <ul
+            className="space-y-2.5 md:hidden"
+            aria-label="Atividades simuladas recentes"
           >
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-semibold text-slate-900">{activity.device}</p>
-              <ActivityStatusBadge status={activity.status} />
-            </div>
-            <p className="mt-2 text-sm leading-5 text-slate-600">
-              {activity.event}
-            </p>
-            <p className="mt-3 flex items-center gap-1.5 text-xs font-medium tabular-nums text-slate-500">
-              <Clock3 aria-hidden="true" className="size-3.5" />
-              {activityTimeLabel} simulado: {activity.displayedOccurredAt}
-            </p>
-          </li>
-        ))}
-      </ul>
-
-      <div className="hidden overflow-hidden rounded-xl border border-slate-200/80 md:block">
-        <table className="w-full table-fixed border-collapse text-left">
-          <caption className="sr-only">
-            Atividades recentes simuladas dos dispositivos
-          </caption>
-          <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <tr>
-              <th scope="col" className="w-1/4 px-5 py-3.5">
-                Dispositivo
-              </th>
-              <th scope="col" className="w-2/5 px-5 py-3.5">
-                Evento
-              </th>
-              <th scope="col" className="w-[15%] px-5 py-3.5">
-                {activityTimeLabel}
-              </th>
-              <th scope="col" className="w-1/5 px-5 py-3.5">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 bg-white">
             {formattedActivities.map((activity) => (
-              <tr
+              <li
                 key={activity.id}
-                className="transition-colors duration-150 hover:bg-slate-50 motion-reduce:transition-none"
+                className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3.5"
               >
-                <th
-                  scope="row"
-                  className="px-5 py-4 text-sm font-semibold text-slate-900 [hyphens:none]"
-                >
-                  {activity.device}
-                </th>
-                <td className="px-5 py-4 text-sm text-slate-600">
-                  {activity.event}
-                </td>
-                <td className="px-5 py-4 text-sm font-medium tabular-nums text-slate-600">
-                  {activity.displayedOccurredAt}
-                </td>
-                <td className="px-5 py-4">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-semibold text-slate-900">
+                    {activity.device}
+                  </p>
                   <ActivityStatusBadge status={activity.status} />
-                </td>
-              </tr>
+                </div>
+                <p className="mt-2 text-sm leading-5 text-slate-600">
+                  {activity.event}
+                </p>
+                <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium tabular-nums text-slate-500">
+                  <Clock3 aria-hidden="true" className="size-3.5" />
+                  {activityTimeLabel} simulado:{" "}
+                  {activity.displayedOccurredAt}
+                </p>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+
+          <div className="hidden overflow-hidden rounded-xl border border-slate-200/80 md:block">
+            <table className="w-full table-fixed border-collapse text-left">
+              <caption className="sr-only">
+                Atividades recentes simuladas dos dispositivos
+              </caption>
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th scope="col" className="w-1/4 px-4 py-3">
+                    Dispositivo
+                  </th>
+                  <th scope="col" className="w-2/5 px-4 py-3">
+                    Evento
+                  </th>
+                  <th scope="col" className="w-[15%] px-4 py-3">
+                    {activityTimeLabel}
+                  </th>
+                  <th scope="col" className="w-1/5 px-4 py-3">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white">
+                {formattedActivities.map((activity) => (
+                  <tr
+                    key={activity.id}
+                    className="transition-colors duration-150 hover:bg-slate-50 motion-reduce:transition-none"
+                  >
+                    <th
+                      scope="row"
+                      className="px-4 py-3 text-sm font-semibold text-slate-900 [hyphens:none]"
+                    >
+                      {activity.device}
+                    </th>
+                    <td className="px-4 py-3 text-sm text-slate-600">
+                      {activity.event}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium tabular-nums text-slate-600">
+                      {activity.displayedOccurredAt}
+                    </td>
+                    <td className="px-4 py-3">
+                      <ActivityStatusBadge status={activity.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </Panel>
   );
 }

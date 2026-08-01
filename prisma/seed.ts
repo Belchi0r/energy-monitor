@@ -4,6 +4,11 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 import { validateDashboardDataset } from "../lib/dashboard/comparison";
 import { dashboardDatasets } from "../lib/dashboard/datasets";
+import { demoDevices } from "../lib/devices/demo-devices";
+import {
+  buildDeviceSeedUpserts,
+  notebookSeedProfile,
+} from "../lib/devices/device-seed";
 import type {
   DashboardDataset,
   RecentActivity,
@@ -37,71 +42,90 @@ async function main() {
   datasets.forEach(validateDashboardDataset);
 
   await prisma.$transaction(
-    datasets.map((dataset) => {
-      const energyUsage = dataset.energyUsage.map((point) => ({
-        id: point.id,
-        label: point.label,
-        shortLabel: point.shortLabel,
-        consumptionKwh: point.consumptionKwh,
-        isWeekend: point.isWeekend ?? null,
-      }));
-      const deviceUsage = dataset.deviceConsumption.map((device) => ({
-        id: device.id,
-        device: device.device,
-        description: device.description,
-        consumptionKwh: device.consumptionKwh,
-      }));
-      const activities = dataset.recentActivities.map((activity) => ({
-        id: activity.id,
-        device: activity.device,
-        event: activity.event,
-        occurredAt: activity.occurredAt,
-        occurredAtIso: parseOccurredAt(activity),
-        status: activity.status,
-      }));
-      const datasetFields = {
-        label: dataset.label,
-        rangeLabel: dataset.rangeLabel,
-        daysCount: dataset.daysCount,
-        granularity: dataset.granularity,
-        currentPowerW: dataset.currentPowerW ?? null,
-        activeDevices: dataset.activeDevices,
-      };
-
-      return prisma.dashboardDataset.upsert({
+    [
+      ...buildDeviceSeedUpserts().map((operation) =>
+        prisma.device.upsert(operation),
+      ),
+      prisma.device.updateMany({
         where: {
-          id: dataset.id,
-        },
-        update: {
-          ...datasetFields,
-          energyUsage: {
-            deleteMany: {},
-            create: energyUsage,
-          },
-          deviceUsage: {
-            deleteMany: {},
-            create: deviceUsage,
-          },
-          activities: {
-            deleteMany: {},
-            create: activities,
+          name: {
+            contains: "notebook",
+            mode: "insensitive",
           },
         },
-        create: {
-          id: dataset.id,
-          ...datasetFields,
-          energyUsage: {
-            create: energyUsage,
-          },
-          deviceUsage: {
-            create: deviceUsage,
-          },
-          activities: {
-            create: activities,
-          },
+        data: {
+          usageProfileType: notebookSeedProfile.usageProfileType,
+          usageWindows: notebookSeedProfile.usageWindows.map(
+            (window) => ({ ...window }),
+          ),
         },
-      });
-    }),
+      }),
+      ...datasets.map((dataset) => {
+        const energyUsage = dataset.energyUsage.map((point) => ({
+          id: point.id,
+          label: point.label,
+          shortLabel: point.shortLabel,
+          consumptionKwh: point.consumptionKwh,
+          isWeekend: point.isWeekend ?? null,
+        }));
+        const deviceUsage = dataset.deviceConsumption.map((device) => ({
+          id: device.id,
+          device: device.device,
+          description: device.description,
+          consumptionKwh: device.consumptionKwh,
+        }));
+        const activities = dataset.recentActivities.map((activity) => ({
+          id: activity.id,
+          device: activity.device,
+          event: activity.event,
+          occurredAt: activity.occurredAt,
+          occurredAtIso: parseOccurredAt(activity),
+          status: activity.status,
+        }));
+        const datasetFields = {
+          label: dataset.label,
+          rangeLabel: dataset.rangeLabel,
+          daysCount: dataset.daysCount,
+          granularity: dataset.granularity,
+          currentPowerW: dataset.currentPowerW ?? null,
+          activeDevices: dataset.activeDevices,
+        };
+
+        return prisma.dashboardDataset.upsert({
+          where: {
+            id: dataset.id,
+          },
+          update: {
+            ...datasetFields,
+            energyUsage: {
+              deleteMany: {},
+              create: energyUsage,
+            },
+            deviceUsage: {
+              deleteMany: {},
+              create: deviceUsage,
+            },
+            activities: {
+              deleteMany: {},
+              create: activities,
+            },
+          },
+          create: {
+            id: dataset.id,
+            ...datasetFields,
+            energyUsage: {
+              create: energyUsage,
+            },
+            deviceUsage: {
+              create: deviceUsage,
+            },
+            activities: {
+              create: activities,
+            },
+          },
+        });
+      }),
+    ],
     {
       timeout: 30_000,
     },
@@ -121,7 +145,7 @@ async function main() {
   );
 
   console.log(
-    `Seed concluído: ${datasets.length} datasets, ${energyPointCount} pontos de consumo, ${deviceCount} consumos por dispositivo e ${activityCount} atividades.`,
+    `Seed concluído: ${demoDevices.length} dispositivos cadastrados, ${datasets.length} datasets, ${energyPointCount} pontos de consumo, ${deviceCount} snapshots por dispositivo e ${activityCount} atividades.`,
   );
 }
 

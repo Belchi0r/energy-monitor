@@ -11,20 +11,30 @@ export function AlertPanel({ alerts }: AlertPanelProps) {
     alerts.length === 1
       ? "1 alerta calculado"
       : `${alerts.length} alertas calculados`;
+  const originLabel = alerts.some(
+    (alert) => alert.dataOrigin === "estimated",
+  )
+    ? "estimativas dos dispositivos cadastrados"
+    : "dados históricos simulados";
 
   return (
     <Panel
       title="Alertas inteligentes"
-      description={`${alertCountLabel} a partir dos dados simulados`}
+      description={`${alertCountLabel} a partir de ${originLabel}`}
       className="min-w-0"
     >
       {alerts.length > 0 ? (
         <ul
           aria-label="Alertas calculados por prioridade"
-          className="space-y-3"
+          className={alerts.length === 1 ? "space-y-0" : "space-y-2.5"}
         >
           {alerts.map((alert, index) => (
-            <AlertCard key={alert.id} alert={alert} index={index} />
+            <AlertCard
+              key={alert.id}
+              alert={alert}
+              index={index}
+              compact
+            />
           ))}
         </ul>
       ) : (

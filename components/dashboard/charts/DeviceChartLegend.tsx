@@ -57,8 +57,8 @@ export function DeviceChartLegend({
               ? "text-emerald-700"
               : "text-slate-600";
         const itemGrid = comparison
-          ? "@min-[22rem]:grid-cols-[minmax(0,1.5fr)_minmax(6rem,0.7fr)_minmax(6.875rem,0.8fr)] @min-[22rem]:py-3.5"
-          : "@min-[18rem]:grid-cols-[minmax(0,1.5fr)_minmax(6rem,0.7fr)] @min-[18rem]:py-3.5";
+          ? "@min-[22rem]:grid-cols-[minmax(11.25rem,1fr)_auto_7.5rem]"
+          : "@min-[18rem]:grid-cols-[minmax(11.25rem,1fr)_auto]";
 
         return (
           <li key={item.id} className="min-w-0">
@@ -76,7 +76,7 @@ export function DeviceChartLegend({
               }}
               onMouseEnter={() => onHover(index)}
               onMouseLeave={() => onHover(null)}
-              className={`grid min-h-[4.75rem] w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 rounded-2xl border px-4 py-3 text-left transition-[border-color,background-color,box-shadow,opacity] duration-200 motion-reduce:transition-none ${itemGrid} ${
+              className={`grid min-h-[4.25rem] w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 rounded-xl border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow,opacity] duration-200 motion-reduce:transition-none ${itemGrid} ${
                 isActive
                   ? "border-emerald-200 bg-emerald-50/60 shadow-sm"
                   : "border-slate-200/80 bg-slate-50/60 hover:border-slate-300 hover:bg-white hover:shadow-sm"
@@ -89,7 +89,7 @@ export function DeviceChartLegend({
                   style={{ backgroundColor: getColor(index) }}
                 />
                 <span className="min-w-0">
-                  <span className="block break-normal text-base font-semibold leading-5 text-slate-900 [hyphens:none] [overflow-wrap:normal] [text-wrap:balance]">
+                  <span className="block break-normal text-sm font-semibold leading-5 text-slate-900 [hyphens:none] [overflow-wrap:normal] [text-wrap:balance]">
                     {displayName}
                   </span>
                   <span className="mt-0.5 block text-xs leading-4 text-slate-500">
@@ -99,7 +99,7 @@ export function DeviceChartLegend({
               </span>
 
               <span className="min-w-0 text-right">
-                <span className="block whitespace-nowrap text-xl font-bold leading-6 tracking-tight tabular-nums text-slate-950">
+                <span className="block whitespace-nowrap text-lg font-bold leading-5 tracking-tight tabular-nums text-slate-950">
                   {formatEnergy(item.consumptionKwh)}
                 </span>
                 <span className="mt-0.5 block whitespace-nowrap text-sm font-medium leading-4 tabular-nums text-slate-500">
@@ -110,7 +110,7 @@ export function DeviceChartLegend({
               {comparison ? (
                 <span className="col-span-2 grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 pl-5 text-left @min-[22rem]:col-span-1 @min-[22rem]:block @min-[22rem]:pl-0">
                   <span
-                    className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-base font-semibold leading-5 tabular-nums ${trendTone}`}
+                    className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-sm font-semibold leading-5 tabular-nums ${trendTone}`}
                   >
                     <TrendIcon aria-hidden="true" className="size-4" />
                     {formatSignedRatioPercentage(

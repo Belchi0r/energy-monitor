@@ -12,9 +12,10 @@ export const dashboardPeriodDefinitions = {
     previousDatasetId: "yesterday",
     label: "Hoje",
     shortLabel: "Hoje",
-    comparisonLabel: "ontem",
+    comparisonLabel: "ontem (simulado)",
     chartTitle: "Consumo ao longo do dia",
-    chartDescription: "Amostras simuladas em intervalos de duas horas",
+    chartDescription:
+      "Curva estimada dos dispositivos ativos em intervalos de duas horas",
     averageLabel: "Média por intervalo",
     pointNoun: "intervalo",
     activityTimeLabel: "Horário",

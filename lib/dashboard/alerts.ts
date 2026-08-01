@@ -99,6 +99,7 @@ function createPeakAlert({
     description: `O valor ficou ${formatDetailedPercentage(differenceFromAverage, 1)} acima da média de ${formatChartEnergy(averageKwh)} por leitura em ${currentLabel.toLocaleLowerCase("pt-BR")}.`,
     createdAt: peak.currentLabel,
     source: "system",
+    dataOrigin: "simulated",
   };
 }
 
@@ -126,6 +127,7 @@ function createDeviceConcentrationAlert({
     description: `${formatChartEnergy(leader.consumptionKwh)} de um total de ${formatChartEnergy(deviceAnalysis.totalKwh)} vieram desse dispositivo.`,
     createdAt: currentLabel,
     source: "device",
+    dataOrigin: "simulated",
   };
 }
 
@@ -160,6 +162,7 @@ function createComparisonAlert({
     description: `${formatChartEnergy(temporalAnalysis.totalKwh)} em ${currentLabel.toLocaleLowerCase("pt-BR")}, ante ${formatChartEnergy(comparison.previousValue)} em ${comparison.previousLabel}.`,
     createdAt: currentLabel,
     source: "comparison",
+    dataOrigin: "simulated",
   };
 }
 
@@ -193,6 +196,7 @@ function createTopThreeAlert({
     description: `${joinDeviceNames(topThree)} somaram ${formatChartEnergy(topThreeTotal)} em ${currentLabel.toLocaleLowerCase("pt-BR")}.`,
     createdAt: currentLabel,
     source: "device",
+    dataOrigin: "simulated",
   };
 }
 
@@ -235,6 +239,7 @@ function createDeviceTrendAlert({
     description: `A diferença foi de ${formatSignedChartEnergy(comparison.absoluteChange)} em relação a ${comparison.previousLabel}.`,
     createdAt: currentLabel,
     source: "device",
+    dataOrigin: "simulated",
   };
 }
 

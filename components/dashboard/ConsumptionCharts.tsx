@@ -13,6 +13,9 @@ type ConsumptionChartsProps = {
   definition: DashboardPeriodDefinition;
   currentLabel: string;
   previousLabel?: string;
+  deviceDataSource:
+    | "registered-estimate"
+    | "simulated-snapshot";
 };
 
 export function ConsumptionCharts({
@@ -21,16 +24,17 @@ export function ConsumptionCharts({
   definition,
   currentLabel,
   previousLabel,
+  deviceDataSource,
 }: ConsumptionChartsProps) {
   return (
     <section
       aria-label="Visualizações de consumo"
-      className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(34rem,1.1fr)] 2xl:grid-cols-[minmax(0,0.95fr)_minmax(38rem,1.05fr)]"
+      className="grid min-w-0 grid-cols-1 gap-4 2xl:grid-cols-2"
     >
       <Panel
         title={definition.chartTitle}
         description={definition.chartDescription}
-        className="min-w-0"
+        className="min-w-0 bg-white"
       >
         <EnergyLineChart
           analysis={temporalAnalysis}
@@ -43,8 +47,12 @@ export function ConsumptionCharts({
 
       <Panel
         title="Consumo por dispositivo"
-        description={`Distribuição simulada em ${definition.label.toLocaleLowerCase("pt-BR")}`}
-        className="min-w-0"
+        description={
+          deviceDataSource === "registered-estimate"
+            ? "Estimativa diária dos dispositivos ativos cadastrados"
+            : `Distribuição simulada em ${definition.label.toLocaleLowerCase("pt-BR")}`
+        }
+        className="min-w-0 bg-slate-50/40"
       >
         <DeviceDistributionChart
           analysis={deviceAnalysis}

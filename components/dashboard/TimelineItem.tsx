@@ -43,7 +43,7 @@ export function TimelineItem({
 
       <TimelineMarker status={item.status} isLast={isLast} />
 
-      <article className="min-w-0 pb-5">
+      <article className="min-w-0 pb-3.5">
         <h3 className="text-sm font-semibold leading-5 text-slate-950">
           {item.event}
         </h3>

@@ -1,0 +1,30 @@
+export const PERIOD_EFFICIENCY_LIMITS = {
+  moderateDeviceConcentration: 0.35,
+  severeDeviceConcentration: 0.45,
+  moderateTopTwoConcentration: 0.55,
+  severeTopTwoConcentration: 0.7,
+  stableVariation: 0.02,
+  moderateIncrease: 0.05,
+  relevantIncrease: 0.1,
+  moderatePeakRatio: 1.25,
+  relevantPeakRatio: 1.5,
+  moderateWeekendRatio: 1.15,
+  relevantWeekendRatio: 1.3,
+  moderateDeviceVariation: 0.1,
+  relevantDeviceVariation: 0.2,
+} as const;
+
+export const PERIOD_SCORE_IMPACTS = {
+  deviceConcentration: 6,
+  severeDeviceConcentration: 12,
+  topTwoConcentration: 4,
+  severeTopTwoConcentration: 8,
+  periodIncrease: 6,
+  relevantPeriodIncrease: 10,
+  peak: 4,
+  relevantPeak: 8,
+  weekend: 4,
+  relevantWeekend: 7,
+  deviceVariation: 4,
+  relevantDeviceVariation: 7,
+} as const;

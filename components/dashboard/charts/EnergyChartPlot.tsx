@@ -46,15 +46,15 @@ export function EnergyChartPlot({
   renderPoint,
 }: EnergyChartPlotProps) {
   return (
-    <div className="h-72 min-w-0 sm:h-80 lg:h-96">
+    <div className="h-60 min-w-0 sm:h-72 xl:h-80">
       <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <ComposedChart
           accessibilityLayer
           data={analysis.points}
-          margin={{ top: 30, right: 14, bottom: 8, left: -12 }}
+          margin={{ top: 30, right: 6, bottom: 8, left: -18 }}
           onClick={onChartClick}
-          title="Evolução do consumo simulado"
-          desc="Série temporal do período selecionado. Os pontos atuais podem ser explorados com mouse, toque ou teclado."
+          title="Evolução do consumo"
+          desc="Série temporal do período selecionado. Os pontos podem ser explorados com mouse, toque ou teclado."
         >
           <defs>
             <linearGradient
@@ -76,16 +76,18 @@ export function EnergyChartPlot({
           <XAxis
             axisLine={false}
             dataKey="axisLabel"
+            interval="preserveStartEnd"
             minTickGap={22}
-            tick={{ fill: "var(--chart-axis)", fontSize: 12 }}
+            tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
+            tickMargin={8}
             tickLine={false}
           />
           <YAxis
             axisLine={false}
-            tick={{ fill: "var(--chart-axis)", fontSize: 12 }}
+            tick={{ fill: "var(--chart-axis)", fontSize: 11 }}
             tickFormatter={(value) => formatDecimal(Number(value))}
             tickLine={false}
-            width={52}
+            width={46}
           />
           <Tooltip
             allowEscapeViewBox={{ x: false, y: false }}
@@ -107,7 +109,7 @@ export function EnergyChartPlot({
             wrapperStyle={{ outline: "none", zIndex: 20 }}
           />
           <Area
-            animationDuration={700}
+            animationDuration={320}
             animationEasing="ease-out"
             dataKey="currentKwh"
             fill="url(#energy-consumption-gradient)"
@@ -119,7 +121,7 @@ export function EnergyChartPlot({
           {previousLabel ? (
             <Line
               activeDot={false}
-              animationDuration={700}
+              animationDuration={320}
               animationEasing="ease-out"
               dataKey="previousKwh"
               dot={false}
@@ -133,7 +135,7 @@ export function EnergyChartPlot({
           ) : null}
           <Line
             activeDot={false}
-            animationDuration={700}
+            animationDuration={320}
             animationEasing="ease-out"
             dataKey="currentKwh"
             dot={renderPoint}

@@ -153,10 +153,10 @@ export function DeviceDistributionChart({
   );
 
   return (
-    <figure ref={figureRef} className="min-w-0">
+    <figure ref={figureRef} className="@container min-w-0">
       <figcaption className="sr-only">
-        Gráfico de rosca interativo com a distribuição simulada do consumo por
-        dispositivo no período selecionado.
+        Gráfico de rosca interativo com a distribuição do consumo por
+        dispositivo.
       </figcaption>
 
       <ChartInsights
@@ -164,73 +164,89 @@ export function DeviceDistributionChart({
         label="Principais conclusões do consumo por dispositivo"
       />
 
-      <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] md:items-center">
-        <div className="relative h-72 min-w-0 sm:h-80 md:h-[25rem]">
-          <DeviceDistributionTooltip
-            item={activeItem}
-            totalDevices={analysis.items.length}
-            totalKwh={analysis.totalKwh}
-            previousLabel={previousLabel}
-          />
-
-          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <PieChart
-              accessibilityLayer
-              title="Consumo simulado por dispositivo"
-              desc="Distribuição do consumo do período. Os setores podem ser selecionados com mouse, toque ou teclado."
-            >
-              <Pie
-                animationDuration={700}
-                animationEasing="ease-out"
-                data={analysis.items}
-                dataKey="consumptionKwh"
-                endAngle={-270}
-                innerRadius="61%"
-                isAnimationActive={!shouldReduceMotion}
-                nameKey="device"
-                outerRadius="82%"
-                paddingAngle={3}
-                rootTabIndex={-1}
-                shape={renderSector}
-                startAngle={90}
-              >
-                {analysis.items.map((item, index) => (
-                  <Cell
-                    key={item.id}
-                    fill={getColor(index)}
-                    stroke="var(--surface-raised)"
-                    strokeWidth={2}
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-
-          <DeviceChartCenter
-            item={activeItem}
-            totalKwh={analysis.totalKwh}
-            currentLabel={currentLabel}
-          />
+      {analysis.items.length === 0 || analysis.totalKwh === 0 ? (
+        <div
+          role="status"
+          className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center"
+        >
+          <p className="text-sm font-semibold text-slate-900">
+            Nenhum dispositivo com consumo estimado
+          </p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-slate-500">
+            Ative um dispositivo com potência e tempo de uso válidos para
+            gerar a distribuição.
+          </p>
         </div>
+      ) : (
+        <>
+          <div className="mt-3 grid min-w-0 gap-3 @min-[40rem]:grid-cols-[minmax(14rem,0.38fr)_minmax(0,0.62fr)] @min-[40rem]:items-center">
+            <div className="relative h-56 min-w-0 sm:h-64 @min-[40rem]:h-72">
+              <DeviceDistributionTooltip
+                item={activeItem}
+                totalDevices={analysis.items.length}
+                totalKwh={analysis.totalKwh}
+                previousLabel={previousLabel}
+              />
 
-        <DeviceChartLegend
-          activeIndex={activeIndex}
-          getColor={getColor}
-          items={analysis.items}
-          onClearSelection={clearSelection}
-          onFocus={setFocusedIndex}
-          onHover={setHoveredIndex}
-          onSelect={toggleSelection}
-          selectedIndex={selectedIndex}
-          totalKwh={analysis.totalKwh}
-        />
-      </div>
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <PieChart
+                  accessibilityLayer
+                  title="Consumo por dispositivo"
+                  desc="Distribuição do consumo do período. Os setores podem ser selecionados com mouse, toque ou teclado."
+                >
+                  <Pie
+                    animationDuration={320}
+                    animationEasing="ease-out"
+                    data={analysis.items}
+                    dataKey="consumptionKwh"
+                    endAngle={-270}
+                    innerRadius="63%"
+                    isAnimationActive={!shouldReduceMotion}
+                    nameKey="device"
+                    outerRadius="80%"
+                    paddingAngle={3}
+                    rootTabIndex={-1}
+                    shape={renderSector}
+                    startAngle={90}
+                  >
+                    {analysis.items.map((item, index) => (
+                      <Cell
+                        key={item.id}
+                        fill={getColor(index)}
+                        stroke="var(--surface-raised)"
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
 
-      <p className="mt-2 text-xs leading-4 text-slate-500">
-        Passe o cursor, toque em um setor ou navegue pela legenda. Clique ou
-        pressione Enter para fixar um dispositivo; repita a ação ou pressione
-        Esc para limpar.
-      </p>
+              <DeviceChartCenter
+                item={activeItem}
+                totalKwh={analysis.totalKwh}
+                currentLabel={currentLabel}
+              />
+            </div>
+
+            <DeviceChartLegend
+              activeIndex={activeIndex}
+              getColor={getColor}
+              items={analysis.items}
+              onClearSelection={clearSelection}
+              onFocus={setFocusedIndex}
+              onHover={setHoveredIndex}
+              onSelect={toggleSelection}
+              selectedIndex={selectedIndex}
+              totalKwh={analysis.totalKwh}
+            />
+          </div>
+
+          <p className="mt-2 text-xs leading-4 text-slate-500">
+            Explore com mouse, toque ou teclado. Use Enter para fixar um
+            dispositivo e Esc para limpar.
+          </p>
+        </>
+      )}
       <p className="sr-only" aria-live="polite">
         {selectedItem
           ? `${selectedItem.device} fixado: ${formatEnergy(selectedItem.consumptionKwh)}, ${formatPercentage(selectedItem.consumptionKwh, analysis.totalKwh)} do total, ${selectedItem.periodComparison?.message ?? selectedItem.comparison}`

@@ -279,13 +279,16 @@ export function analyzeDeviceConsumption(
       description: `${formatEnergy(topItem.consumptionKwh)} colocaram o dispositivo na liderança do período.`,
       tone: "brand",
     },
-    {
+  ];
+
+  if (topTwo.length === 2) {
+    insights.push({
       id: "top-two-concentration",
       title: `Dois dispositivos concentraram ${formatPercentage(topTwoTotal, totalKwh)} do consumo.`,
       description: `${topTwo[0].device} e ${lowercaseFirst(topTwo[1].device)} somaram ${formatChartEnergy(topTwoTotal)}.`,
       tone: "neutral",
-    },
-  ];
+    });
+  }
 
   if (largestDeviceChange?.periodComparison) {
     insights.push({

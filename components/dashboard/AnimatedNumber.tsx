@@ -21,7 +21,7 @@ type AnimatedNumberProps = {
 export function AnimatedNumber({
   value,
   format,
-  durationMs = 800,
+  durationMs = 320,
 }: AnimatedNumberProps) {
   const shouldReduceMotion = useReducedMotion();
   const animatedValue = useMotionValue(0);

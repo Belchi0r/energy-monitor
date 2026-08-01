@@ -2,7 +2,6 @@ import {
   Activity,
   CalendarDays,
   DollarSign,
-  Gauge,
   Power,
   Zap,
   type LucideIcon,
@@ -18,10 +17,10 @@ import type {
 } from "@/lib/dashboard/types";
 
 const metricIcons: Record<MetricId, LucideIcon> = {
-  currentPower: Gauge,
   periodConsumption: Activity,
   dailyAverage: CalendarDays,
   estimatedCost: DollarSign,
+  monthlyConsumption: CalendarDays,
   activeDevices: Power,
   topDevice: Zap,
 };
@@ -39,7 +38,7 @@ export function MetricsSection({
     <section
       aria-label="Indicadores de consumo"
       key={transitionKey}
-      className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.05fr)_minmax(0,0.9fr)_minmax(0,0.9fr)]"
     >
       {metrics.map((metric, index) => {
         const cardProps: MetricCardProps = {
@@ -50,6 +49,12 @@ export function MetricsSection({
           icon: metricIcons[metric.id],
           comparison: metric.comparison,
           animationDelayMs: index * 50,
+          emphasis:
+            metric.id === "periodConsumption"
+              ? "featured"
+              : metric.id === "estimatedCost"
+                ? "primary"
+                : "secondary",
         };
 
         return <MetricCard key={metric.id} {...cardProps} />;

@@ -16,9 +16,9 @@ export function Panel({
   return (
     <section
       aria-label={title}
-      className={`rounded-2xl border border-slate-200/80 bg-surface-raised p-5 shadow-[var(--shadow-panel)] transition-[border-color,box-shadow] duration-200 hover:border-slate-300/90 hover:shadow-[var(--shadow-panel-hover)] motion-reduce:transition-none sm:p-6 ${className}`}
+      className={`rounded-2xl border border-slate-200/80 bg-surface-raised p-4 shadow-[var(--shadow-panel)] sm:p-5 ${className}`}
     >
-      <header className="min-h-14">
+      <header>
         <h2 className="text-lg font-semibold tracking-tight text-slate-950">
           {title}
         </h2>
@@ -26,7 +26,7 @@ export function Panel({
           <p className="mt-1 text-sm leading-5 text-slate-500">{description}</p>
         ) : null}
       </header>
-      <div className="mt-6">{children}</div>
+      <div className="mt-4 min-w-0">{children}</div>
     </section>
   );
 }

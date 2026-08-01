@@ -132,7 +132,7 @@ export function EnergyLineChart({
   return (
     <figure ref={figureRef} className="min-w-0">
       <figcaption className="sr-only">
-        Gráfico interativo do consumo simulado no período selecionado.
+        Gráfico interativo do consumo no período selecionado.
       </figcaption>
 
       <ChartInsights
@@ -144,7 +144,17 @@ export function EnergyLineChart({
         previousLabel={previousLabel}
       />
 
-      <div className="mt-2">
+      {analysis.totalKwh === 0 ? (
+        <div
+          role="status"
+          className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4 text-sm leading-5 text-slate-600"
+        >
+          Não há consumo estimado porque nenhum dispositivo ativo possui
+          potência e tempo de uso válidos.
+        </div>
+      ) : null}
+
+      <div className="mt-1">
         <EnergyChartPlot
           analysis={analysis}
           currentLabel={currentLabel}
@@ -157,7 +167,7 @@ export function EnergyLineChart({
         />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3">
         <EnergyChartSummary
           averageKwh={analysis.averageKwh}
           averageLabel={averageLabel}
@@ -167,10 +177,9 @@ export function EnergyLineChart({
         />
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-slate-500">
-        Passe o cursor ou use Tab para explorar os pontos. Clique, toque ou
-        pressione Enter para fixar uma leitura; repita a ação ou pressione Esc
-        para limpar.
+      <p className="mt-2 text-xs leading-5 text-slate-500">
+        Explore com mouse, toque ou Tab. Use Enter para fixar uma leitura e
+        Esc para limpar.
       </p>
       <p className="sr-only" aria-live="polite">
         {selectedPoint

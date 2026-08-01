@@ -11,10 +11,10 @@ export type DashboardDatasetId =
 export type TemporalGranularity = "twoHours" | "day";
 
 export type MetricId =
-  | "currentPower"
   | "periodConsumption"
   | "dailyAverage"
   | "estimatedCost"
+  | "monthlyConsumption"
   | "activeDevices"
   | "topDevice";
 

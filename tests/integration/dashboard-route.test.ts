@@ -12,13 +12,16 @@ import { GET } from "@/app/api/dashboard/route";
 import type { DashboardPeriod } from "@/lib/dashboard/types";
 import { MockDashboardRepository } from "@/lib/repositories/mock-dashboard-repository";
 import { DashboardService } from "@/lib/services/dashboard-service";
+import { DeviceService } from "@/lib/services/device-service";
 import type {
   DashboardApiErrorResponse,
   DashboardApiSuccessResponse,
 } from "@/lib/types/dashboard-api";
+import { InMemoryDeviceRepository } from "@/tests/device-test-helpers";
 
-const { getDashboardMock } = vi.hoisted(() => ({
+const { getDashboardMock, getEffectiveEnergyTariffMock } = vi.hoisted(() => ({
   getDashboardMock: vi.fn<DashboardService["getDashboard"]>(),
+  getEffectiveEnergyTariffMock: vi.fn(),
 }));
 
 vi.mock("@/lib/dashboard/application", () => ({
@@ -27,8 +30,13 @@ vi.mock("@/lib/dashboard/application", () => ({
   },
 }));
 
+vi.mock("@/lib/energy/energy-tariff.server", () => ({
+  getEffectiveEnergyTariff: getEffectiveEnergyTariffMock,
+}));
+
 const mockBackedDashboardService = new DashboardService(
   new MockDashboardRepository(),
+  new DeviceService(new InMemoryDeviceRepository()),
 );
 
 type SuccessCase = {
@@ -106,8 +114,10 @@ function createRequest(query = "") {
 
 beforeEach(() => {
   getDashboardMock.mockReset();
-  getDashboardMock.mockImplementation((query) =>
-    mockBackedDashboardService.getDashboard(query),
+  getEffectiveEnergyTariffMock.mockReset();
+  getEffectiveEnergyTariffMock.mockResolvedValue(0.84);
+  getDashboardMock.mockImplementation((query, tariffBrlPerKwh) =>
+    mockBackedDashboardService.getDashboard(query, tariffBrlPerKwh),
   );
 });
 
@@ -139,6 +149,10 @@ describe("GET /api/dashboard", () => {
       expect(body.meta.period).toBe(period);
       expect(body.meta.compare).toBe(compare);
       expect(Number.isNaN(Date.parse(body.meta.generatedAt))).toBe(false);
+      expect(getDashboardMock).toHaveBeenCalledWith(
+        { period, compare },
+        0.84,
+      );
     },
   );
 

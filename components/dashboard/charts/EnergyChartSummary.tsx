@@ -42,13 +42,13 @@ export function EnergyChartSummary({
       {summaryItems.map((item) => (
         <div
           key={item.label}
-          className="min-w-0 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4"
+          className="min-w-0 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-2.5"
         >
           <dt className="text-xs font-medium text-slate-500">{item.label}</dt>
-          <dd className="mt-1.5 whitespace-nowrap text-base font-semibold tracking-tight tabular-nums text-slate-900">
+          <dd className="mt-1 whitespace-nowrap text-sm font-semibold tracking-tight tabular-nums text-slate-900">
             {item.value}
           </dd>
-          <dd className="mt-1 text-xs leading-4 text-slate-500 [text-wrap:balance]">
+          <dd className="mt-0.5 text-xs leading-4 text-slate-500 [text-wrap:balance]">
             {item.detail}
           </dd>
         </div>

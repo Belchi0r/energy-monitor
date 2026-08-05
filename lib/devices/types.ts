@@ -31,6 +31,7 @@ export type DeviceInput = {
 
 export type DeviceRecord = DeviceInput & {
   id: string;
+  userId: string;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -20,7 +20,8 @@ enum UsageProfileType {
 
 model Device {
   id                String           @id @default(uuid())
-  name              String           @unique
+  userId            String           @db.Uuid
+  name              String
   category          String
   powerWatts        Float
   averageDailyHours Float
@@ -29,6 +30,8 @@ model Device {
   usageWindows      Json             @default("[]")
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+
+  @@index([userId])
 }
 
 model DashboardDataset {

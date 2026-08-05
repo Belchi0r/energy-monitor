@@ -1,13 +1,23 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { isPublicAuthPagePath } from "@/lib/auth/routes";
 
 type AppShellProps = {
   children: ReactNode;
 };
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+
+  if (isPublicAuthPagePath(pathname)) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 xl:flex">
       <a

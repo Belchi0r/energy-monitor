@@ -3,6 +3,7 @@ import {
   serviceErrorResponse,
   validationErrorResponse,
 } from "@/app/api/devices/route-helpers";
+import { requireUser } from "@/lib/supabase/require-user";
 import { deviceService } from "@/lib/devices/application";
 import { deviceInputSchema } from "@/lib/schemas/device-schema";
 import type {
@@ -12,8 +13,9 @@ import type {
 
 export async function GET() {
   try {
+    const user = await requireUser();
     const response: DeviceListApiSuccessResponse = {
-      data: await deviceService.listDevices(),
+      data: await deviceService.listDevices(user.id),
     };
 
     return Response.json(response, {
@@ -28,6 +30,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let userId: string;
+
+  try {
+    userId = (await requireUser()).id;
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+
   let body: unknown;
 
   try {
@@ -48,7 +58,7 @@ export async function POST(request: Request) {
 
   try {
     const response: DeviceApiSuccessResponse = {
-      data: await deviceService.createDevice(result.data),
+      data: await deviceService.createDevice(userId, result.data),
     };
 
     return Response.json(response, { status: 201 });

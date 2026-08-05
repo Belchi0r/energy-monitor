@@ -252,13 +252,14 @@ export class DashboardService {
 
   async getDashboard(
     query: DashboardQuery,
+    userId: string,
     tariffBrlPerKwh = DEFAULT_ENERGY_TARIFF_BRL_PER_KWH,
   ): Promise<DashboardViewData> {
     const effectiveTariff =
       resolveEffectiveEnergyTariff(tariffBrlPerKwh);
 
     if (query.period === "today") {
-      return this.getTodayDashboard(query, effectiveTariff);
+      return this.getTodayDashboard(query, userId, effectiveTariff);
     }
 
     return this.getHistoricalDashboard({
@@ -269,6 +270,7 @@ export class DashboardService {
 
   private async getTodayDashboard(
     query: DashboardQuery,
+    userId: string,
     tariffBrlPerKwh: number,
   ): Promise<DashboardViewData> {
     const definition = getPeriodDefinition("today");
@@ -279,7 +281,7 @@ export class DashboardService {
       ? this.repository.getDataset(definition.previousDatasetId)
       : Promise.resolve(undefined);
     const [devices, activityDataset, previous] = await Promise.all([
-      this.deviceService.listDevices(),
+      this.deviceService.listDevices(userId),
       activityDatasetPromise,
       previousPromise,
     ]);

@@ -1,5 +1,6 @@
 import type { ZodError } from "zod";
 
+import { AuthenticationRequiredError } from "@/lib/supabase/require-user";
 import {
   DeviceNameConflictError,
   DeviceNotFoundError,
@@ -42,6 +43,17 @@ export function malformedJsonResponse() {
 }
 
 export function serviceErrorResponse(error: unknown) {
+  if (error instanceof AuthenticationRequiredError) {
+    const response: DeviceApiErrorResponse = {
+      error: {
+        code: "UNAUTHORIZED",
+        message: "Autenticação necessária.",
+      },
+    };
+
+    return Response.json(response, { status: 401 });
+  }
+
   if (error instanceof DeviceNotFoundError) {
     const response: DeviceApiErrorResponse = {
       error: {

@@ -3,6 +3,7 @@ import {
   serviceErrorResponse,
   validationErrorResponse,
 } from "@/app/api/devices/route-helpers";
+import { requireUser } from "@/lib/supabase/require-user";
 import { deviceService } from "@/lib/devices/application";
 import {
   deviceIdSchema,
@@ -24,6 +25,14 @@ export async function PATCH(
   request: Request,
   context: DeviceRouteContext,
 ) {
+  let userId: string;
+
+  try {
+    userId = (await requireUser()).id;
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+
   const idResult = await parseDeviceId(context);
 
   if (!idResult.success) {
@@ -55,6 +64,7 @@ export async function PATCH(
   try {
     const response: DeviceApiSuccessResponse = {
       data: await deviceService.updateDevice(
+        userId,
         idResult.data,
         bodyResult.data,
       ),
@@ -70,6 +80,14 @@ export async function DELETE(
   _request: Request,
   context: DeviceRouteContext,
 ) {
+  let userId: string;
+
+  try {
+    userId = (await requireUser()).id;
+  } catch (error) {
+    return serviceErrorResponse(error);
+  }
+
   const idResult = await parseDeviceId(context);
 
   if (!idResult.success) {
@@ -81,7 +99,7 @@ export async function DELETE(
   }
 
   try {
-    await deviceService.deleteDevice(idResult.data);
+    await deviceService.deleteDevice(userId, idResult.data);
 
     return new Response(null, { status: 204 });
   } catch (error) {

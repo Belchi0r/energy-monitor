@@ -7,6 +7,7 @@ import { Panel } from "@/components/ui/Panel";
 import { dashboardService } from "@/lib/dashboard/application";
 import { isDashboardPeriod } from "@/lib/dashboard/periods";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
+import { requireUser } from "@/lib/supabase/require-user";
 
 type HistoryPageProps = {
   searchParams: Promise<{
@@ -32,10 +33,11 @@ function getComparisonState(value: string | string[] | undefined) {
 export default async function HistoryPage({
   searchParams,
 }: HistoryPageProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh] =
+  const [resolvedSearchParams, tariffBrlPerKwh, user] =
     await Promise.all([
       searchParams,
       getEffectiveEnergyTariff(),
+      requireUser(),
     ]);
   const period = getSelectedPeriod(resolvedSearchParams.period);
   const compare = getComparisonState(resolvedSearchParams.compare);
@@ -44,6 +46,7 @@ export default async function HistoryPage({
       period,
       compare,
     },
+    user.id,
     tariffBrlPerKwh,
   );
 

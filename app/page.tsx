@@ -15,16 +15,18 @@ import {
 } from "@/components/utils/dashboard-period";
 import { dashboardService } from "@/lib/dashboard/application";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
+import { requireUser } from "@/lib/supabase/require-user";
 
 type HomeProps = {
   searchParams: Promise<DashboardSearchParams>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh] =
+  const [resolvedSearchParams, tariffBrlPerKwh, user] =
     await Promise.all([
       searchParams,
       getEffectiveEnergyTariff(),
+      requireUser(),
     ]);
   const routeState = parseDashboardSearchParams(
     resolvedSearchParams,
@@ -39,6 +41,7 @@ export default async function Home({ searchParams }: HomeProps) {
       period: routeState.period,
       compare: routeState.compare,
     },
+    user.id,
     tariffBrlPerKwh,
   );
 

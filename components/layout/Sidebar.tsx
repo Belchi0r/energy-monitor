@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { NavigationLinks } from "@/components/layout/NavigationLinks";
 
 export function Sidebar() {
@@ -41,6 +42,10 @@ export function Sidebar() {
           Estimativas e cenÃ¡rios demonstrativos, sem monitoramento em tempo
           real.
         </p>
+      </div>
+
+      <div className="px-4 pb-4">
+        <LogoutButton variant="dark" />
       </div>
     </aside>
   );

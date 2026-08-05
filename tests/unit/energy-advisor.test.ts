@@ -19,6 +19,7 @@ import { DeviceService } from "@/lib/services/device-service";
 import {
   createDemoDeviceRecords,
   InMemoryDeviceRepository,
+  TEST_USER_ID,
 } from "@/tests/device-test-helpers";
 
 function createDevice(
@@ -466,14 +467,20 @@ describe("EnergyAdvisor", () => {
       new MockDashboardRepository(),
       new DeviceService(new InMemoryDeviceRepository()),
     );
-    const today = await service.getDashboard({
-      period: "today",
-      compare: false,
-    });
-    const history = await service.getDashboard({
-      period: "7d",
-      compare: false,
-    });
+    const today = await service.getDashboard(
+      {
+        period: "today",
+        compare: false,
+      },
+      TEST_USER_ID,
+    );
+    const history = await service.getDashboard(
+      {
+        period: "7d",
+        compare: false,
+      },
+      TEST_USER_ID,
+    );
 
     expect(today.energyAnalysis).toBeDefined();
     expect(today.alerts.every((alert) => alert.source === "advisor")).toBe(
@@ -490,14 +497,20 @@ describe("EnergyAdvisor", () => {
         new InMemoryDeviceRepository(createDemoDeviceRecords()),
       ),
     );
-    const today = await service.getDashboard({
-      period: "today",
-      compare: true,
-    });
-    const history = await service.getDashboard({
-      period: "30d",
-      compare: true,
-    });
+    const today = await service.getDashboard(
+      {
+        period: "today",
+        compare: true,
+      },
+      TEST_USER_ID,
+    );
+    const history = await service.getDashboard(
+      {
+        period: "30d",
+        compare: true,
+      },
+      TEST_USER_ID,
+    );
 
     expect(
       today.alerts.every(

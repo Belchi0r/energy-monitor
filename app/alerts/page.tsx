@@ -9,16 +9,21 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { SummaryCard } from "@/components/ui/SummaryCard";
 import { dashboardService } from "@/lib/dashboard/application";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
+import { requireUser } from "@/lib/supabase/require-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function AlertsPage() {
-  const tariffBrlPerKwh = await getEffectiveEnergyTariff();
+  const [tariffBrlPerKwh, user] = await Promise.all([
+    getEffectiveEnergyTariff(),
+    requireUser(),
+  ]);
   const view = await dashboardService.getDashboard(
     {
       period: "30d",
       compare: true,
     },
+    user.id,
     tariffBrlPerKwh,
   );
   const attentionCount = view.alerts.filter(

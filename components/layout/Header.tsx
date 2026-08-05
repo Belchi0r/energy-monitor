@@ -4,6 +4,7 @@ import { UserRound, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { getCurrentNavigationItem } from "@/components/layout/navigation";
 
@@ -43,18 +44,15 @@ export function Header() {
 
         <MobileNavigation pathname={pathname} />
 
-        <div
-          className="hidden shrink-0 items-center gap-3 xl:flex"
-          aria-label="Usuário de demonstração"
-          role="group"
-        >
+        <div className="hidden shrink-0 items-center gap-3 xl:flex">
           <div className="text-right">
-            <p className="text-sm font-medium text-slate-800">Visitante</p>
-            <p className="text-xs text-slate-500">Acesso demonstrativo</p>
+            <p className="text-sm font-medium text-slate-800">Conta ativa</p>
+            <p className="text-xs text-slate-500">Sessão protegida</p>
           </div>
           <span className="flex size-9 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-600">
             <UserRound aria-hidden="true" className="size-4.5" />
           </span>
+          <LogoutButton compact />
         </div>
       </div>
     </header>

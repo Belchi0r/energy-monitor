@@ -14,6 +14,7 @@ import { DeviceService } from "@/lib/services/device-service";
 import {
   createDemoDeviceRecords,
   InMemoryDeviceRepository,
+  TEST_USER_ID,
 } from "@/tests/device-test-helpers";
 
 type ServiceScenario = {
@@ -88,13 +89,24 @@ class RecordingDashboardRepository implements DashboardRepository {
 
 function createSubject() {
   const repository = new RecordingDashboardRepository();
+  const dashboardService = new DashboardService(
+    repository,
+    new DeviceService(new InMemoryDeviceRepository()),
+  );
 
   return {
     repository,
-    service: new DashboardService(
-      repository,
-      new DeviceService(new InMemoryDeviceRepository()),
-    ),
+    service: {
+      getDashboard: (
+        query: Parameters<DashboardService["getDashboard"]>[0],
+        tariffBrlPerKwh?: number,
+      ) =>
+        dashboardService.getDashboard(
+          query,
+          TEST_USER_ID,
+          tariffBrlPerKwh,
+        ),
+    },
   };
 }
 
@@ -304,10 +316,13 @@ describe("DashboardService", () => {
       ),
     );
 
-    const result = await service.getDashboard({
-      period: "today",
-      compare: false,
-    });
+    const result = await service.getDashboard(
+      {
+        period: "today",
+        compare: false,
+      },
+      TEST_USER_ID,
+    );
 
     expect(result.todaySnapshot?.totalConsumptionKwh).toBe(0);
     expect(result.deviceAnalysis.items).toEqual([]);
@@ -330,10 +345,13 @@ describe("DashboardService", () => {
       ),
     );
 
-    const result = await service.getDashboard({
-      period: "today",
-      compare: false,
-    });
+    const result = await service.getDashboard(
+      {
+        period: "today",
+        compare: false,
+      },
+      TEST_USER_ID,
+    );
 
     expect(result.deviceAnalysis.items).toHaveLength(1);
     expect(result.deviceAnalysis.items[0].percentage).toBe(1);

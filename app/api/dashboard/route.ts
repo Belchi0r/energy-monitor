@@ -2,6 +2,10 @@ import type { NextRequest } from "next/server";
 
 import { dashboardService } from "@/lib/dashboard/application";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
+import {
+  AuthenticationRequiredError,
+  requireUser,
+} from "@/lib/supabase/require-user";
 import { dashboardQuerySchema } from "@/lib/schemas/dashboard-query-schema";
 import type {
   DashboardApiErrorDetail,
@@ -45,9 +49,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tariffBrlPerKwh = await getEffectiveEnergyTariff();
+    const [tariffBrlPerKwh, user] = await Promise.all([
+      getEffectiveEnergyTariff(),
+      requireUser(),
+    ]);
     const data = await dashboardService.getDashboard(
       result.data,
+      user.id,
       tariffBrlPerKwh,
     );
     const response: DashboardApiSuccessResponse = {
@@ -60,7 +68,18 @@ export async function GET(request: NextRequest) {
     };
 
     return Response.json(response, { status: 200 });
-  } catch {
+  } catch (error) {
+    if (error instanceof AuthenticationRequiredError) {
+      const response: DashboardApiErrorResponse = {
+        error: {
+          code: "UNAUTHORIZED",
+          message: "Autenticação necessária.",
+        },
+      };
+
+      return Response.json(response, { status: 401 });
+    }
+
     const response: DashboardApiErrorResponse = {
       error: {
         code: "INTERNAL_ERROR",

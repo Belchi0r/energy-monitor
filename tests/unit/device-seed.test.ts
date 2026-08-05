@@ -5,16 +5,19 @@ import {
   type DeviceSeedEntry,
 } from "@/lib/devices/device-seed";
 
+const TEST_USER_ID = "11111111-1111-4111-8111-111111111111";
+
 function applySeed(
   current: ReadonlyMap<string, DeviceSeedEntry>,
 ): Map<string, DeviceSeedEntry> {
   const next = new Map(current);
 
-  for (const operation of buildDeviceSeedUpserts()) {
+  for (const operation of buildDeviceSeedUpserts(TEST_USER_ID)) {
     const existing = next.get(operation.where.id);
 
     next.set(operation.where.id, {
       id: operation.where.id,
+      userId: operation.where.userId,
       ...(existing ? operation.update : operation.create),
     });
   }

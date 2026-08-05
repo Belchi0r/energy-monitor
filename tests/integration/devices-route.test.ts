@@ -20,16 +20,32 @@ import type {
   DeviceListApiSuccessResponse,
 } from "@/lib/types/device-api";
 
-const serviceMocks = vi.hoisted(() => ({
-  listDevices: vi.fn<DeviceService["listDevices"]>(),
-  createDevice: vi.fn<DeviceService["createDevice"]>(),
-  updateDevice: vi.fn<DeviceService["updateDevice"]>(),
-  deleteDevice: vi.fn<DeviceService["deleteDevice"]>(),
+const { serviceMocks, requireUserMock } = vi.hoisted(() => ({
+  requireUserMock: vi.fn(),
+  serviceMocks: {
+    listDevices: vi.fn<DeviceService["listDevices"]>(),
+    createDevice: vi.fn<DeviceService["createDevice"]>(),
+    updateDevice: vi.fn<DeviceService["updateDevice"]>(),
+    deleteDevice: vi.fn<DeviceService["deleteDevice"]>(),
+  },
 }));
 
 vi.mock("@/lib/devices/application", () => ({
   deviceService: serviceMocks,
 }));
+
+vi.mock("@/lib/supabase/require-user", async (importOriginal) => {
+  const original = await importOriginal<
+    typeof import("@/lib/supabase/require-user")
+  >();
+
+  return {
+    ...original,
+    requireUser: requireUserMock,
+  };
+});
+
+const AUTH_USER_ID = "11111111-1111-4111-8111-111111111111";
 
 const input = {
   name: "Televisor",
@@ -82,6 +98,8 @@ function context(id = device.id) {
 }
 
 beforeEach(() => {
+  requireUserMock.mockReset();
+  requireUserMock.mockResolvedValue({ id: AUTH_USER_ID });
   Object.values(serviceMocks).forEach((mock) => mock.mockReset());
   serviceMocks.listDevices.mockResolvedValue([device]);
   serviceMocks.createDevice.mockResolvedValue(device);
@@ -103,6 +121,7 @@ describe("/api/devices", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(body.data).toEqual([device]);
+    expect(serviceMocks.listDevices).toHaveBeenCalledWith(AUTH_USER_ID);
   });
 
   it("cria um dispositivo com HTTP 201", async () => {
@@ -113,7 +132,10 @@ describe("/api/devices", () => {
       (await response.json()) as DeviceApiSuccessResponse;
 
     expect(response.status).toBe(201);
-    expect(serviceMocks.createDevice).toHaveBeenCalledWith(input);
+    expect(serviceMocks.createDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
+      input,
+    );
     expect(body.data).toEqual(device);
   });
 
@@ -128,6 +150,7 @@ describe("/api/devices", () => {
 
     expect(response.status).toBe(201);
     expect(serviceMocks.createDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
       expect.objectContaining({
         usageProfileType: "SPLIT",
         usageWindows: [
@@ -182,6 +205,72 @@ describe("/api/devices", () => {
     expect(response.status).toBe(500);
     expect(serializedBody).not.toContain("segredo do banco");
   });
+
+  it.each(["GET", "POST"] as const)(
+    "retorna 401 no %s sem sessão e não acessa o service",
+    async (method) => {
+      const { AuthenticationRequiredError } = await import(
+        "@/lib/supabase/require-user"
+      );
+      requireUserMock.mockRejectedValueOnce(
+        new AuthenticationRequiredError(),
+      );
+
+      const response =
+        method === "GET"
+          ? await GET()
+          : await POST(
+              jsonRequest(
+                "http://localhost/api/devices",
+                "POST",
+                input,
+              ),
+            );
+      const body = (await response.json()) as DeviceApiErrorResponse;
+
+      expect(response.status).toBe(401);
+      expect(body.error).toEqual({
+        code: "UNAUTHORIZED",
+        message: "Autenticação necessária.",
+      });
+      expect(serviceMocks.listDevices).not.toHaveBeenCalled();
+      expect(serviceMocks.createDevice).not.toHaveBeenCalled();
+    },
+  );
+
+  it("ignora userId de query e header e usa o usuário autenticado", async () => {
+    const response = await POST(
+      new Request(
+        "http://localhost/api/devices?userId=22222222-2222-4222-8222-222222222222",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-user-id": "22222222-2222-4222-8222-222222222222",
+          },
+          body: JSON.stringify(input),
+        },
+      ),
+    );
+
+    expect(response.status).toBe(201);
+    expect(serviceMocks.createDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
+      input,
+    );
+  });
+
+  it("rejeita userId enviado no body", async () => {
+    const response = await POST(
+      jsonRequest("http://localhost/api/devices", "POST", {
+        ...input,
+        userId: "22222222-2222-4222-8222-222222222222",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(serviceMocks.createDevice).not.toHaveBeenCalled();
+  });
 });
 
 describe("/api/devices/[id]", () => {
@@ -197,6 +286,7 @@ describe("/api/devices/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(serviceMocks.updateDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
       device.id,
       input,
     );
@@ -220,6 +310,7 @@ describe("/api/devices/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(serviceMocks.updateDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
       device.id,
       editedInput,
     );
@@ -237,6 +328,7 @@ describe("/api/devices/[id]", () => {
 
     expect(response.status).toBe(200);
     expect(serviceMocks.updateDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
       device.id,
       expect.objectContaining({
         usageProfileType: "SPLIT",
@@ -258,7 +350,10 @@ describe("/api/devices/[id]", () => {
 
     expect(response.status).toBe(204);
     expect(await response.text()).toBe("");
-    expect(serviceMocks.deleteDevice).toHaveBeenCalledWith(device.id);
+    expect(serviceMocks.deleteDevice).toHaveBeenCalledWith(
+      AUTH_USER_ID,
+      device.id,
+    );
   });
 
   it.each(["PATCH", "DELETE"] as const)(
@@ -294,6 +389,42 @@ describe("/api/devices/[id]", () => {
 
       expect(response.status).toBe(404);
       expect(body.error.code).toBe("DEVICE_NOT_FOUND");
+    },
+  );
+
+  it.each(["PATCH", "DELETE"] as const)(
+    "retorna 401 no %s sem sessão",
+    async (method) => {
+      const { AuthenticationRequiredError } = await import(
+        "@/lib/supabase/require-user"
+      );
+      requireUserMock.mockRejectedValueOnce(
+        new AuthenticationRequiredError(),
+      );
+
+      const response =
+        method === "PATCH"
+          ? await PATCH(
+              jsonRequest(
+                `http://localhost/api/devices/${device.id}`,
+                "PATCH",
+                input,
+              ),
+              context(),
+            )
+          : await DELETE(
+              new Request(
+                `http://localhost/api/devices/${device.id}`,
+                { method: "DELETE" },
+              ),
+              context(),
+            );
+      const body = (await response.json()) as DeviceApiErrorResponse;
+
+      expect(response.status).toBe(401);
+      expect(body.error.code).toBe("UNAUTHORIZED");
+      expect(serviceMocks.updateDevice).not.toHaveBeenCalled();
+      expect(serviceMocks.deleteDevice).not.toHaveBeenCalled();
     },
   );
 });

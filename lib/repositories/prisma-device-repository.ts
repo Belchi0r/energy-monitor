@@ -6,11 +6,15 @@ import {
   type DeviceRecord,
   type DeviceStatus,
 } from "@/lib/devices/types";
-import type { DeviceRepository } from "@/lib/repositories/device-repository";
+import {
+  DeviceRepositoryNameConflictError,
+  type DeviceRepository,
+} from "@/lib/repositories/device-repository";
 import { resolveUsageProfile } from "@/lib/energy/usage-profiles";
 
 type PersistedDevice = {
   id: string;
+  userId: string;
   name: string;
   category: string;
   powerWatts: number;
@@ -47,6 +51,7 @@ function toDomainDevice(persisted: PersistedDevice): DeviceRecord {
 
   return {
     id: persisted.id,
+    userId: persisted.userId,
     name: persisted.name,
     category: parseCategory(persisted.category),
     powerWatts: persisted.powerWatts,
@@ -59,11 +64,23 @@ function toDomainDevice(persisted: PersistedDevice): DeviceRecord {
   };
 }
 
+function hasPrismaErrorCode(error: unknown, code: string) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === code
+  );
+}
+
 export class PrismaDeviceRepository implements DeviceRepository {
   constructor(private readonly client: PrismaClient) {}
 
-  async findAll(): Promise<readonly DeviceRecord[]> {
+  async findAll(userId: string): Promise<readonly DeviceRecord[]> {
     const devices = await this.client.device.findMany({
+      where: {
+        userId,
+      },
       orderBy: [
         {
           status: "asc",
@@ -77,19 +94,27 @@ export class PrismaDeviceRepository implements DeviceRepository {
     return devices.map(toDomainDevice);
   }
 
-  async findById(id: string): Promise<DeviceRecord | null> {
-    const device = await this.client.device.findUnique({
+  async findById(
+    userId: string,
+    id: string,
+  ): Promise<DeviceRecord | null> {
+    const device = await this.client.device.findFirst({
       where: {
         id,
+        userId,
       },
     });
 
     return device ? toDomainDevice(device) : null;
   }
 
-  async findByName(name: string): Promise<DeviceRecord | null> {
+  async findByName(
+    userId: string,
+    name: string,
+  ): Promise<DeviceRecord | null> {
     const device = await this.client.device.findFirst({
       where: {
+        userId,
         name: {
           equals: name,
           mode: "insensitive",
@@ -100,43 +125,80 @@ export class PrismaDeviceRepository implements DeviceRepository {
     return device ? toDomainDevice(device) : null;
   }
 
-  async create(input: DeviceInput): Promise<DeviceRecord> {
-    const device = await this.client.device.create({
-      data: {
-        ...input,
-        usageWindows: input.usageWindows.map((window) => ({
-          ...window,
-        })),
-      },
-    });
+  async create(
+    userId: string,
+    input: DeviceInput,
+  ): Promise<DeviceRecord> {
+    try {
+      const device = await this.client.device.create({
+        data: {
+          ...input,
+          userId,
+          usageWindows: input.usageWindows.map((window) => ({
+            ...window,
+          })),
+        },
+      });
 
-    return toDomainDevice(device);
+      return toDomainDevice(device);
+    } catch (error) {
+      if (hasPrismaErrorCode(error, "P2002")) {
+        throw new DeviceRepositoryNameConflictError();
+      }
+
+      throw error;
+    }
   }
 
   async update(
+    userId: string,
     id: string,
     input: DeviceInput,
-  ): Promise<DeviceRecord> {
-    const device = await this.client.device.update({
-      where: {
-        id,
-      },
-      data: {
-        ...input,
-        usageWindows: input.usageWindows.map((window) => ({
-          ...window,
-        })),
-      },
-    });
+  ): Promise<DeviceRecord | null> {
+    try {
+      const device = await this.client.device.update({
+        where: {
+          id,
+          userId,
+        },
+        data: {
+          ...input,
+          usageWindows: input.usageWindows.map((window) => ({
+            ...window,
+          })),
+        },
+      });
 
-    return toDomainDevice(device);
+      return toDomainDevice(device);
+    } catch (error) {
+      if (hasPrismaErrorCode(error, "P2002")) {
+        throw new DeviceRepositoryNameConflictError();
+      }
+
+      if (hasPrismaErrorCode(error, "P2025")) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
-  async delete(id: string): Promise<void> {
-    await this.client.device.delete({
-      where: {
-        id,
-      },
-    });
+  async delete(userId: string, id: string): Promise<boolean> {
+    try {
+      await this.client.device.delete({
+        where: {
+          id,
+          userId,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      if (hasPrismaErrorCode(error, "P2025")) {
+        return false;
+      }
+
+      throw error;
+    }
   }
 }

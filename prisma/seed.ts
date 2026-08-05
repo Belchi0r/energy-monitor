@@ -15,6 +15,8 @@ import type {
 } from "../lib/dashboard/types";
 
 const connectionString = process.env.DIRECT_URL;
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 if (!connectionString) {
   throw new Error("A variável DIRECT_URL não foi encontrada.");
@@ -35,6 +37,20 @@ function parseOccurredAt(activity: RecentActivity) {
   return occurredAt;
 }
 
+function requireDeviceSeedUserId(value: string | undefined): string {
+  if (!value || !uuidPattern.test(value)) {
+    throw new Error(
+      "A variável DEVICE_SEED_USER_ID deve conter o UUID do proprietário dos dispositivos demonstrativos.",
+    );
+  }
+
+  return value;
+}
+
+const deviceSeedUserId = requireDeviceSeedUserId(
+  process.env.DEVICE_SEED_USER_ID,
+);
+
 async function main() {
   const datasets: readonly DashboardDataset[] =
     Object.values(dashboardDatasets);
@@ -43,11 +59,12 @@ async function main() {
 
   await prisma.$transaction(
     [
-      ...buildDeviceSeedUpserts().map((operation) =>
+      ...buildDeviceSeedUpserts(deviceSeedUserId).map((operation) =>
         prisma.device.upsert(operation),
       ),
       prisma.device.updateMany({
         where: {
+          userId: deviceSeedUserId,
           name: {
             contains: "notebook",
             mode: "insensitive",

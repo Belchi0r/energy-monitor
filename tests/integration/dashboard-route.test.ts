@@ -17,11 +17,19 @@ import type {
   DashboardApiErrorResponse,
   DashboardApiSuccessResponse,
 } from "@/lib/types/dashboard-api";
-import { InMemoryDeviceRepository } from "@/tests/device-test-helpers";
+import {
+  InMemoryDeviceRepository,
+  TEST_USER_ID,
+} from "@/tests/device-test-helpers";
 
-const { getDashboardMock, getEffectiveEnergyTariffMock } = vi.hoisted(() => ({
+const {
+  getDashboardMock,
+  getEffectiveEnergyTariffMock,
+  requireUserMock,
+} = vi.hoisted(() => ({
   getDashboardMock: vi.fn<DashboardService["getDashboard"]>(),
   getEffectiveEnergyTariffMock: vi.fn(),
+  requireUserMock: vi.fn(),
 }));
 
 vi.mock("@/lib/dashboard/application", () => ({
@@ -33,6 +41,17 @@ vi.mock("@/lib/dashboard/application", () => ({
 vi.mock("@/lib/energy/energy-tariff.server", () => ({
   getEffectiveEnergyTariff: getEffectiveEnergyTariffMock,
 }));
+
+vi.mock("@/lib/supabase/require-user", async (importOriginal) => {
+  const original = await importOriginal<
+    typeof import("@/lib/supabase/require-user")
+  >();
+
+  return {
+    ...original,
+    requireUser: requireUserMock,
+  };
+});
 
 const mockBackedDashboardService = new DashboardService(
   new MockDashboardRepository(),
@@ -115,9 +134,15 @@ function createRequest(query = "") {
 beforeEach(() => {
   getDashboardMock.mockReset();
   getEffectiveEnergyTariffMock.mockReset();
+  requireUserMock.mockReset();
   getEffectiveEnergyTariffMock.mockResolvedValue(0.84);
-  getDashboardMock.mockImplementation((query, tariffBrlPerKwh) =>
-    mockBackedDashboardService.getDashboard(query, tariffBrlPerKwh),
+  requireUserMock.mockResolvedValue({ id: TEST_USER_ID });
+  getDashboardMock.mockImplementation((query, userId, tariffBrlPerKwh) =>
+    mockBackedDashboardService.getDashboard(
+      query,
+      userId,
+      tariffBrlPerKwh,
+    ),
   );
 });
 
@@ -151,6 +176,7 @@ describe("GET /api/dashboard", () => {
       expect(Number.isNaN(Date.parse(body.meta.generatedAt))).toBe(false);
       expect(getDashboardMock).toHaveBeenCalledWith(
         { period, compare },
+        TEST_USER_ID,
         0.84,
       );
     },
@@ -204,5 +230,25 @@ describe("GET /api/dashboard", () => {
     expect(serializedBody).not.toMatch(
       /falha interna sensível|stack|node_modules/i,
     );
+  });
+
+  it("retorna HTTP 401 sem sessão e não acessa o service", async () => {
+    const { AuthenticationRequiredError } = await import(
+      "@/lib/supabase/require-user"
+    );
+    requireUserMock.mockRejectedValueOnce(
+      new AuthenticationRequiredError(),
+    );
+
+    const response = await GET(createRequest());
+    const body =
+      (await response.json()) as DashboardApiErrorResponse;
+
+    expect(response.status).toBe(401);
+    expect(body.error).toEqual({
+      code: "UNAUTHORIZED",
+      message: "Autenticação necessária.",
+    });
+    expect(getDashboardMock).not.toHaveBeenCalled();
   });
 });

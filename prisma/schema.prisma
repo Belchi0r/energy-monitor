@@ -20,8 +20,8 @@ enum UsageProfileType {
 
 model Device {
   id                String           @id @default(uuid())
-  userId            String?          @db.Uuid
-  name              String           @unique
+  userId            String           @db.Uuid
+  name              String
   category          String
   powerWatts        Float
   averageDailyHours Float

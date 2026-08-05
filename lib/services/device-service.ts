@@ -8,7 +8,10 @@ import {
   resolveUsageProfile,
   resolveUsageProfileDetails,
 } from "@/lib/energy/usage-profiles";
-import type { DeviceRepository } from "@/lib/repositories/device-repository";
+import {
+  DeviceRepositoryNameConflictError,
+  type DeviceRepository,
+} from "@/lib/repositories/device-repository";
 
 export function toDeviceView(device: DeviceRecord): DeviceView {
   const estimatedDailyConsumptionKwh =
@@ -51,46 +54,70 @@ export class DeviceNameConflictError extends Error {
 export class DeviceService {
   constructor(private readonly repository: DeviceRepository) {}
 
-  async listDevices(): Promise<readonly DeviceView[]> {
-    const devices = await this.repository.findAll();
+  async listDevices(userId: string): Promise<readonly DeviceView[]> {
+    const devices = await this.repository.findAll(userId);
 
     return devices.map(toDeviceView);
   }
 
-  async createDevice(input: DeviceInput): Promise<DeviceView> {
-    await this.ensureNameIsAvailable(input.name);
-    const device = await this.repository.create(this.normalizeInput(input));
+  async createDevice(
+    userId: string,
+    input: DeviceInput,
+  ): Promise<DeviceView> {
+    await this.ensureNameIsAvailable(userId, input.name);
+
+    let device: DeviceRecord;
+
+    try {
+      device = await this.repository.create(
+        userId,
+        this.normalizeInput(input),
+      );
+    } catch (error) {
+      this.rethrowRepositoryConflict(error);
+    }
 
     return toDeviceView(device);
   }
 
   async updateDevice(
+    userId: string,
     id: string,
     input: DeviceInput,
   ): Promise<DeviceView> {
-    const current = await this.repository.findById(id);
+    const current = await this.repository.findById(userId, id);
 
     if (!current) {
       throw new DeviceNotFoundError();
     }
 
-    await this.ensureNameIsAvailable(input.name, id);
-    const device = await this.repository.update(
-      id,
-      this.normalizeInput(input),
-    );
+    await this.ensureNameIsAvailable(userId, input.name, id);
+
+    let device: DeviceRecord | null;
+
+    try {
+      device = await this.repository.update(
+        userId,
+        id,
+        this.normalizeInput(input),
+      );
+    } catch (error) {
+      this.rethrowRepositoryConflict(error);
+    }
+
+    if (!device) {
+      throw new DeviceNotFoundError();
+    }
 
     return toDeviceView(device);
   }
 
-  async deleteDevice(id: string): Promise<void> {
-    const current = await this.repository.findById(id);
+  async deleteDevice(userId: string, id: string): Promise<void> {
+    const deleted = await this.repository.delete(userId, id);
 
-    if (!current) {
+    if (!deleted) {
       throw new DeviceNotFoundError();
     }
-
-    await this.repository.delete(id);
   }
 
   private normalizeInput(input: DeviceInput): DeviceInput {
@@ -105,13 +132,25 @@ export class DeviceService {
   }
 
   private async ensureNameIsAvailable(
+    userId: string,
     name: string,
     currentDeviceId?: string,
   ) {
-    const existing = await this.repository.findByName(name.trim());
+    const existing = await this.repository.findByName(
+      userId,
+      name.trim(),
+    );
 
     if (existing && existing.id !== currentDeviceId) {
       throw new DeviceNameConflictError();
     }
+  }
+
+  private rethrowRepositoryConflict(error: unknown): never {
+    if (error instanceof DeviceRepositoryNameConflictError) {
+      throw new DeviceNameConflictError();
+    }
+
+    throw error;
   }
 }

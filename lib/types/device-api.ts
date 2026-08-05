@@ -9,6 +9,7 @@ export type DeviceApiErrorDetail = {
 export type DeviceApiErrorResponse = {
   error: {
     code:
+      | "UNAUTHORIZED"
       | "INVALID_BODY"
       | "INVALID_DEVICE_ID"
       | "DEVICE_NOT_FOUND"

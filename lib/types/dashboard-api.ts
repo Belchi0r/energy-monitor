@@ -9,7 +9,10 @@ export type DashboardApiSuccessResponse = {
   };
 };
 
-export type DashboardApiErrorCode = "INVALID_QUERY" | "INTERNAL_ERROR";
+export type DashboardApiErrorCode =
+  | "UNAUTHORIZED"
+  | "INVALID_QUERY"
+  | "INTERNAL_ERROR";
 
 export type DashboardApiErrorDetail = {
   field: string;

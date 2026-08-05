@@ -14,6 +14,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
+import { LogoutButton } from "@/components/auth/LogoutButton";
 import { NavigationLinks } from "@/components/layout/NavigationLinks";
 
 const FOCUSABLE_ELEMENTS =
@@ -231,6 +232,10 @@ export function MobileNavigation({
                         Estimativas e cenÃ¡rios demonstrativos, sem
                         monitoramento em tempo real.
                       </p>
+                    </div>
+
+                    <div className="px-4 pb-5">
+                      <LogoutButton variant="dark" />
                     </div>
                   </motion.aside>
                 </>

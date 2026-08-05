@@ -1,11 +1,15 @@
 import { SettingsPreferences } from "@/components/dashboard/SettingsPreferences";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
+import { requireUser } from "@/lib/supabase/require-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const tariffBrlPerKwh = await getEffectiveEnergyTariff();
+  const [tariffBrlPerKwh] = await Promise.all([
+    getEffectiveEnergyTariff(),
+    requireUser(),
+  ]);
 
   return (
     <>

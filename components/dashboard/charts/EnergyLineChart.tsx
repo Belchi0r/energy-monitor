@@ -139,48 +139,61 @@ export function EnergyLineChart({
         insights={analysis.insights}
         label="Principais conclusões da série temporal"
       />
-      <ComparisonLegend
-        currentLabel={currentLabel}
-        previousLabel={previousLabel}
-      />
 
-      {analysis.totalKwh === 0 ? (
+      {analysis.points.length === 0 ? (
         <div
           role="status"
-          className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4 text-sm leading-5 text-slate-600"
+          className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center"
         >
-          Não há consumo estimado porque nenhum dispositivo ativo possui
-          potência e tempo de uso válidos.
+          <p className="text-sm font-semibold text-slate-900">
+            Nenhuma medição de consumo disponível
+          </p>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-slate-500">
+            Adicione dispositivos para preparar as estimativas da sua residência.
+          </p>
         </div>
-      ) : null}
-
-      <div className="mt-1">
-        <EnergyChartPlot
-          analysis={analysis}
+      ) : (
+        <>
+          <ComparisonLegend
           currentLabel={currentLabel}
           previousLabel={previousLabel}
-          selectedIndex={selectedIndex}
-          selectedPoint={selectedPoint}
-          animate={!shouldReduceMotion}
-          onChartClick={handleChartClick}
-          renderPoint={renderPoint}
-        />
-      </div>
-
-      <div className="mt-3">
-        <EnergyChartSummary
-          averageKwh={analysis.averageKwh}
-          averageLabel={averageLabel}
-          minimum={analysis.minimum}
-          peak={analysis.peak}
-          pointNoun={pointNoun}
-        />
-      </div>
-
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        Explore com mouse, toque ou Tab. Use Enter para fixar uma leitura e
-        Esc para limpar.
-      </p>
+          />
+          {analysis.totalKwh === 0 ? (
+            <div
+              role="status"
+              className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4 text-sm leading-5 text-slate-600"
+            >
+              Não há consumo estimado porque nenhum dispositivo ativo possui
+              potência e tempo de uso válidos.
+            </div>
+          ) : null}
+          <div className="mt-1">
+            <EnergyChartPlot
+              analysis={analysis}
+              currentLabel={currentLabel}
+              previousLabel={previousLabel}
+              selectedIndex={selectedIndex}
+              selectedPoint={selectedPoint}
+              animate={!shouldReduceMotion}
+              onChartClick={handleChartClick}
+              renderPoint={renderPoint}
+            />
+          </div>
+          <div className="mt-3">
+            <EnergyChartSummary
+              averageKwh={analysis.averageKwh}
+              averageLabel={averageLabel}
+              minimum={analysis.minimum}
+              peak={analysis.peak}
+              pointNoun={pointNoun}
+            />
+          </div>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            Explore com mouse, toque ou Tab. Use Enter para fixar uma leitura e
+            Esc para limpar.
+          </p>
+        </>
+      )}
       <p className="sr-only" aria-live="polite">
         {selectedPoint
           ? `Leitura fixada em ${selectedPoint.currentLabel}: ${formatChartEnergy(selectedPoint.currentKwh)}.`

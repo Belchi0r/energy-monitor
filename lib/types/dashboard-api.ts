@@ -5,6 +5,7 @@ export type DashboardApiSuccessResponse = {
   meta: {
     period: DashboardViewData["period"];
     compare: boolean;
+    mode: DashboardViewData["mode"];
     generatedAt: string;
   };
 };

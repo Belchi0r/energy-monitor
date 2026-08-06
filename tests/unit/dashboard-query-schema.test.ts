@@ -7,6 +7,7 @@ describe("dashboardQuerySchema", () => {
     expect(dashboardQuerySchema.parse({})).toEqual({
       period: "today",
       compare: false,
+      mode: "home",
     });
   });
 
@@ -16,6 +17,7 @@ describe("dashboardQuerySchema", () => {
       expect(dashboardQuerySchema.parse({ period })).toEqual({
         period,
         compare: false,
+        mode: "home",
       });
     },
   );
@@ -30,11 +32,23 @@ describe("dashboardQuerySchema", () => {
   });
 
   it.each([
+    [undefined, "home"],
+    ["home", "home"],
+    ["demo", "demo"],
+    ["valor-arbitrário", "home"],
+  ] as const)("normaliza mode=%s para %s", (input, expected) => {
+    expect(dashboardQuerySchema.parse({ mode: input }).mode).toBe(
+      expected,
+    );
+  });
+
+  it.each([
     ["período vazio", { period: "" }],
     ["período inválido", { period: "year" }],
     ["comparação inválida", { compare: "yes" }],
     ["período repetido", { period: ["today", "7d"] }],
     ["comparação repetida", { compare: ["true", "false"] }],
+    ["modo repetido", { mode: ["home", "demo"] }],
   ])("rejeita %s", (_caseName, input) => {
     expect(dashboardQuerySchema.safeParse(input).success).toBe(false);
   });

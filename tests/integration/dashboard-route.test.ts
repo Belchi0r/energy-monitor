@@ -9,7 +9,10 @@ import {
 } from "vitest";
 
 import { GET } from "@/app/api/dashboard/route";
-import type { DashboardPeriod } from "@/lib/dashboard/types";
+import type {
+  DashboardDataMode,
+  DashboardPeriod,
+} from "@/lib/dashboard/types";
 import { MockDashboardRepository } from "@/lib/repositories/mock-dashboard-repository";
 import { DashboardService } from "@/lib/services/dashboard-service";
 import { DeviceService } from "@/lib/services/device-service";
@@ -63,6 +66,7 @@ type SuccessCase = {
   query: string;
   period: DashboardPeriod;
   compare: boolean;
+  mode: DashboardDataMode;
 };
 
 const successCases = [
@@ -71,48 +75,70 @@ const successCases = [
     query: "",
     period: "today",
     compare: false,
+    mode: "home",
   },
   {
     name: "today",
     query: "?period=today",
     period: "today",
     compare: false,
+    mode: "home",
   },
   {
     name: "today com comparação",
     query: "?period=today&compare=true",
     period: "today",
     compare: true,
+    mode: "home",
   },
   {
     name: "sete dias",
     query: "?period=7d",
     period: "7d",
     compare: false,
+    mode: "home",
   },
   {
     name: "sete dias com comparação",
     query: "?period=7d&compare=true",
     period: "7d",
     compare: true,
+    mode: "home",
   },
   {
     name: "trinta dias",
     query: "?period=30d",
     period: "30d",
     compare: false,
+    mode: "home",
   },
   {
     name: "trinta dias com comparação",
     query: "?period=30d&compare=true",
     period: "30d",
     compare: true,
+    mode: "home",
   },
   {
     name: "compare=false explícito",
     query: "?period=today&compare=false",
     period: "today",
     compare: false,
+    mode: "home",
+  },
+  {
+    name: "demonstração",
+    query: "?mode=demo&period=today",
+    period: "today",
+    compare: false,
+    mode: "demo",
+  },
+  {
+    name: "modo inválido normalizado",
+    query: "?mode=externo&period=today",
+    period: "today",
+    compare: false,
+    mode: "home",
   },
 ] as const satisfies readonly SuccessCase[];
 
@@ -122,6 +148,7 @@ const invalidCases = [
   ["comparação inválida", "?compare=yes"],
   ["período repetido", "?period=today&period=7d"],
   ["comparação repetida", "?compare=true&compare=false"],
+  ["modo repetido", "?mode=home&mode=demo"],
   ["parâmetro desconhecido", "?unexpected=value"],
 ] as const;
 
@@ -155,7 +182,7 @@ afterEach(() => {
 describe("GET /api/dashboard", () => {
   it.each(successCases)(
     "retorna HTTP 200 para $name",
-    async ({ query, period, compare }) => {
+    async ({ query, period, compare, mode }) => {
       const response = await GET(createRequest(query));
       const body =
         (await response.json()) as DashboardApiSuccessResponse;
@@ -167,15 +194,16 @@ describe("GET /api/dashboard", () => {
       expect(body.data).toEqual(
         expect.objectContaining({
           period,
-          compare,
+          mode,
           metrics: expect.any(Array),
         }),
       );
       expect(body.meta.period).toBe(period);
       expect(body.meta.compare).toBe(compare);
+      expect(body.meta.mode).toBe(mode);
       expect(Number.isNaN(Date.parse(body.meta.generatedAt))).toBe(false);
       expect(getDashboardMock).toHaveBeenCalledWith(
-        { period, compare },
+        { period, compare, mode },
         TEST_USER_ID,
         0.84,
       );

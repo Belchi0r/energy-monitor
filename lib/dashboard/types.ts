@@ -1,5 +1,15 @@
 export type DashboardPeriod = "today" | "7d" | "30d";
 
+export const dashboardDataModes = ["home", "demo"] as const;
+
+export type DashboardDataMode = (typeof dashboardDataModes)[number];
+
+export function isDashboardDataMode(
+  value: string,
+): value is DashboardDataMode {
+  return dashboardDataModes.includes(value as DashboardDataMode);
+}
+
 export type DashboardDatasetId =
   | "today"
   | "yesterday"

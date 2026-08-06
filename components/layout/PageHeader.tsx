@@ -7,8 +7,10 @@ type PageHeaderProps = {
   title: string;
   description: string;
   demoDescription: string;
+  noticeTitle?: string;
   action?: ReactNode;
   showBackLink?: boolean;
+  backHref?: string;
 };
 
 export function PageHeader({
@@ -16,14 +18,16 @@ export function PageHeader({
   title,
   description,
   demoDescription,
+  noticeTitle = "Dados demonstrativos",
   action,
   showBackLink = false,
+  backHref = "/",
 }: PageHeaderProps) {
   return (
     <section aria-labelledby="page-title">
       {showBackLink ? (
         <Link
-          href="/"
+          href={backHref}
           className="group mb-5 inline-flex min-h-10 items-center gap-2 rounded-xl px-1 text-sm font-semibold text-slate-600 transition-colors duration-200 hover:text-emerald-700 motion-reduce:transition-none"
         >
           <span className="flex size-8 items-center justify-center rounded-lg border border-slate-200 bg-white shadow-sm transition-[border-color,transform] duration-200 group-hover:-translate-x-0.5 group-hover:border-emerald-200 motion-reduce:transform-none motion-reduce:transition-none">
@@ -61,7 +65,7 @@ export function PageHeader({
         />
         <div>
           <p className="text-sm font-semibold text-emerald-900">
-            Dados demonstrativos
+            {noticeTitle}
           </p>
           <p className="mt-1 text-sm leading-5 text-emerald-800">
             {demoDescription}

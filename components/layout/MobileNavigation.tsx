@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BadgeInfo,
-  Menu,
-  X,
-  Zap,
-} from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   useEffect,
@@ -15,19 +10,27 @@ import {
 import { createPortal } from "react-dom";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import {
+  DataModeIndicator,
+  resolveDataModeIndicatorContext,
+} from "@/components/layout/DataModeIndicator";
 import { NavigationLinks } from "@/components/layout/NavigationLinks";
+import type { DashboardDataMode } from "@/lib/dashboard/types";
 
 const FOCUSABLE_ELEMENTS =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 type MobileNavigationProps = {
   pathname: string;
+  mode: DashboardDataMode;
 };
 
 export function MobileNavigation({
   pathname,
+  mode,
 }: MobileNavigationProps) {
   const shouldReduceMotion = useReducedMotion();
+  const indicatorContext = resolveDataModeIndicatorContext(pathname);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [portalTarget, setPortalTarget] =
     useState<HTMLElement | null>(null);
@@ -216,23 +219,15 @@ export function MobileNavigation({
                       </p>
                       <NavigationLinks
                         pathname={pathname}
+                        mode={mode}
                         onNavigate={() => setIsDrawerOpen(false)}
                       />
                     </nav>
 
-                    <div className="m-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-200">
-                        <BadgeInfo
-                          aria-hidden="true"
-                          className="size-4 text-emerald-300"
-                        />
-                        Modo demonstração
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">
-                        Estimativas e cenÃ¡rios demonstrativos, sem
-                        monitoramento em tempo real.
-                      </p>
-                    </div>
+                    <DataModeIndicator
+                      mode={mode}
+                      context={indicatorContext}
+                    />
 
                     <div className="px-4 pb-5">
                       <LogoutButton variant="dark" />

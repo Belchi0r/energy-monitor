@@ -26,6 +26,7 @@ import {
   type DashboardTimeline,
 } from "@/lib/dashboard/timeline";
 import type {
+  DashboardDataMode,
   DashboardDataset,
   DashboardMetric,
   DashboardPeriod,
@@ -66,8 +67,20 @@ function compareMonetaryValues(
 }
 
 export type DashboardViewData = {
+  mode: DashboardDataMode;
+  dataOrigin: "user-devices" | "global-demo";
   period: DashboardPeriod;
   compare: boolean;
+  historyAvailable: boolean;
+  comparisonAvailable: boolean;
+  emptyState:
+    | {
+        kind: "no-devices" | "historical-unavailable";
+        title: string;
+        description: string;
+        supportingText?: string;
+      }
+    | null;
   definition: DashboardPeriodDefinition;
   currentLabel: string;
   previousLabel?: string;
@@ -78,7 +91,6 @@ export type DashboardViewData = {
   timeline: DashboardTimeline;
   activities: readonly RecentActivity[];
   deviceDataSource: "registered-estimate" | "simulated-snapshot";
-  comparisonDataSource?: "simulated-snapshot";
   todaySnapshot?: TodayEnergySnapshot;
   energyAnalysis?: EnergyAnalysis;
   periodEnergyAnalysis?: PeriodEnergyAnalysis;
@@ -258,95 +270,118 @@ export class DashboardService {
     const effectiveTariff =
       resolveEffectiveEnergyTariff(tariffBrlPerKwh);
 
-    if (query.period === "today") {
-      return this.getTodayDashboard(query, userId, effectiveTariff);
+    if (query.mode === "demo") {
+      return this.getDemoDashboard(query, effectiveTariff);
     }
 
-    return this.getHistoricalDashboard({
-      ...query,
-      period: query.period,
-    }, effectiveTariff);
+    if (query.period !== "today") {
+      return this.getUnavailableHomeHistory(query.period);
+    }
+
+    return this.getHomeTodayDashboard(userId, effectiveTariff);
   }
 
-  private async getTodayDashboard(
-    query: DashboardQuery,
+  private async getHomeTodayDashboard(
     userId: string,
     tariffBrlPerKwh: number,
   ): Promise<DashboardViewData> {
     const definition = getPeriodDefinition("today");
-    const activityDatasetPromise = this.repository.getDataset(
-      definition.currentDatasetId,
-    );
-    const previousPromise = query.compare
-      ? this.repository.getDataset(definition.previousDatasetId)
-      : Promise.resolve(undefined);
-    const [devices, activityDataset, previous] = await Promise.all([
-      this.deviceService.listDevices(userId),
-      activityDatasetPromise,
-      previousPromise,
-    ]);
+    const devices = await this.deviceService.listDevices(userId);
     const snapshot = buildTodayEnergySnapshot(
       devices,
       tariffBrlPerKwh,
     );
-    const energyAnalysis = buildEnergyAnalysis(snapshot, {
-      tariffBrlPerKwh,
-    });
-    const temporalAnalysis = buildTodayTemporalAnalysis(
-      snapshot,
-      definition,
-      previous,
-    );
-    const deviceAnalysis = buildTodayDeviceAnalysis(snapshot);
+    const hasDevices = devices.length > 0;
+    const energyAnalysis = hasDevices
+      ? buildEnergyAnalysis(snapshot, { tariffBrlPerKwh })
+      : undefined;
+    const temporalAnalysis = hasDevices
+      ? buildTodayTemporalAnalysis(snapshot, definition)
+      : createEmptyTemporalAnalysis();
+    const deviceAnalysis = hasDevices
+      ? buildTodayDeviceAnalysis(snapshot)
+      : createEmptyDeviceAnalysis();
     const currentLabel = "Hoje (estimado)";
 
     return {
+      mode: "home",
+      dataOrigin: "user-devices",
       period: "today",
-      compare: query.compare,
+      compare: false,
+      historyAvailable: false,
+      comparisonAvailable: false,
+      emptyState: hasDevices
+        ? null
+        : {
+            kind: "no-devices",
+            title: "Comece cadastrando seu primeiro dispositivo",
+            description:
+              "Adicione os equipamentos da sua residência para gerar estimativas de consumo, custo e recomendações.",
+          },
       definition,
       currentLabel,
-      previousLabel: previous
-        ? `${previous.label} (simulado)`
-        : undefined,
       metrics: buildTodayMetrics(
         snapshot,
-        query.compare,
+        false,
         definition,
         tariffBrlPerKwh,
-        previous,
       ),
       temporalAnalysis,
       deviceAnalysis,
-      alerts: energyAnalysis.alerts.map(mapAdvisorAlert),
-      timeline: buildDashboardTimeline(
-        activityDataset.recentActivities,
-        "today",
-        activityDataset.label,
-      ),
-      activities: activityDataset.recentActivities.slice(0, 5),
+      alerts: energyAnalysis?.alerts.map(mapAdvisorAlert) ?? [],
+      timeline: buildDashboardTimeline([], "today", currentLabel),
+      activities: [],
       deviceDataSource: "registered-estimate",
-      comparisonDataSource: previous
-        ? "simulated-snapshot"
-        : undefined,
       todaySnapshot: snapshot,
       energyAnalysis,
-      transitionKey: `today-${query.compare ? "comparison" : "current"}`,
+      transitionKey: "home-today-current",
     };
   }
 
-  private async getHistoricalDashboard(
-    query: DashboardQuery & {
-      period: HistoricalDashboardPeriod;
-    },
+  private getUnavailableHomeHistory(
+    period: HistoricalDashboardPeriod,
+  ): DashboardViewData {
+    const definition = getPeriodDefinition(period);
+
+    return {
+      mode: "home",
+      dataOrigin: "user-devices",
+      period,
+      compare: false,
+      historyAvailable: false,
+      comparisonAvailable: false,
+      emptyState: {
+        kind: "historical-unavailable",
+        title:
+          "Ainda não existem medições históricas para esta residência.",
+        description:
+          "O histórico começará a ser exibido quando a integração de medições estiver disponível.",
+      },
+      definition,
+      currentLabel: `${definition.label} (indisponível)`,
+      metrics: [],
+      temporalAnalysis: createEmptyTemporalAnalysis(),
+      deviceAnalysis: createEmptyDeviceAnalysis(),
+      alerts: [],
+      timeline: buildDashboardTimeline([], period, definition.label),
+      activities: [],
+      deviceDataSource: "registered-estimate",
+      transitionKey: `home-${period}-unavailable`,
+    };
+  }
+
+  private async getDemoDashboard(
+    query: DashboardQuery,
     tariffBrlPerKwh: number,
   ): Promise<DashboardViewData> {
     const definition = getPeriodDefinition(query.period);
     const currentPromise = this.repository.getDataset(
       definition.currentDatasetId,
     );
-    const previousPromise = this.repository.getDataset(
-      definition.previousDatasetId,
-    );
+    const needsPrevious = query.compare || query.period !== "today";
+    const previousPromise = needsPrevious
+      ? this.repository.getDataset(definition.previousDatasetId)
+      : Promise.resolve(undefined);
     const [current, previous] = await Promise.all([
       currentPromise,
       previousPromise,
@@ -362,15 +397,19 @@ export class DashboardService {
       visiblePrevious?.deviceConsumption,
       definition.comparisonLabel,
     );
-    const periodEnergyAnalysis = buildPeriodEnergyAnalysis(
-      query.period,
-      current,
-      previous,
-    );
+    const periodEnergyAnalysis =
+      query.period !== "today" && previous
+        ? buildPeriodEnergyAnalysis(query.period, current, previous)
+        : undefined;
 
     return {
+      mode: "demo",
+      dataOrigin: "global-demo",
       period: query.period,
       compare: query.compare,
+      historyAvailable: true,
+      comparisonAvailable: true,
+      emptyState: null,
       definition,
       currentLabel: current.label,
       previousLabel: visiblePrevious?.label,
@@ -396,11 +435,27 @@ export class DashboardService {
       ),
       activities: current.recentActivities.slice(0, 5),
       deviceDataSource: "simulated-snapshot",
-      comparisonDataSource: visiblePrevious
-        ? "simulated-snapshot"
-        : undefined,
       periodEnergyAnalysis,
-      transitionKey: `${query.period}-${query.compare ? "comparison" : "current"}`,
+      transitionKey: `demo-${query.period}-${query.compare ? "comparison" : "current"}`,
     };
   }
+}
+
+function createEmptyTemporalAnalysis(): EnergyUsageAnalysis {
+  return {
+    points: [],
+    totalKwh: 0,
+    averageKwh: 0,
+    peak: null,
+    minimum: null,
+    insights: [],
+  };
+}
+
+function createEmptyDeviceAnalysis(): DeviceConsumptionAnalysis {
+  return {
+    items: [],
+    totalKwh: 0,
+    insights: [],
+  };
 }

@@ -8,12 +8,14 @@ import type {
   DashboardPeriod,
   RecentActivity,
 } from "@/lib/dashboard/types";
+import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
-type HistoryActivityViewProps = {
+export type HistoryActivityViewProps = {
   activities: readonly RecentActivity[];
   activityTimeLabel: string;
   period: DashboardPeriod;
   periodLabel: string;
+  dataOrigin: DashboardViewData["dataOrigin"];
 };
 
 export function HistoryActivityView({
@@ -21,6 +23,7 @@ export function HistoryActivityView({
   activityTimeLabel,
   period,
   periodLabel,
+  dataOrigin,
 }: HistoryActivityViewProps) {
   const [device, setDevice] = useState("all");
   const devices = Array.from(
@@ -72,6 +75,7 @@ export function HistoryActivityView({
         activityTimeLabel={activityTimeLabel}
         period={period}
         periodLabel={periodLabel}
+        dataOrigin={dataOrigin}
       />
     </div>
   );

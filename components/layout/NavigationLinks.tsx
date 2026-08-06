@@ -4,14 +4,18 @@ import {
   isNavigationItemActive,
   navigationItems,
 } from "@/components/layout/navigation";
+import { buildModeAwareNavigationHref } from "@/components/utils/dashboard-mode";
+import type { DashboardDataMode } from "@/lib/dashboard/types";
 
 type NavigationLinksProps = {
   pathname: string;
+  mode: DashboardDataMode;
   onNavigate?: () => void;
 };
 
 export function NavigationLinks({
   pathname,
+  mode,
   onNavigate,
 }: NavigationLinksProps) {
   return (
@@ -22,7 +26,7 @@ export function NavigationLinks({
         return (
           <li key={href}>
             <Link
-              href={href}
+              href={buildModeAwareNavigationHref(href, mode)}
               aria-current={isActive ? "page" : undefined}
               onClick={onNavigate}
               className={`relative flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm transition-[border-color,background-color,color] duration-200 focus-visible:outline-emerald-300 motion-reduce:transition-none ${

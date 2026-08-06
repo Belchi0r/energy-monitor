@@ -5,34 +5,31 @@ import { useTransition } from "react";
 
 import { PeriodComparisonControl } from "@/components/dashboard/PeriodComparisonControl";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
-import type { DashboardPeriod } from "@/lib/dashboard/types";
+import { buildHistoryUrl } from "@/components/utils/history-route";
+import type {
+  DashboardDataMode,
+  DashboardPeriod,
+} from "@/lib/dashboard/types";
 
 type HistoryPeriodNavProps = {
   period: DashboardPeriod;
   compare: boolean;
   comparisonLabel: string;
+  mode: DashboardDataMode;
 };
-
-function buildHistoryUrl(period: DashboardPeriod, compare: boolean) {
-  const params = new URLSearchParams({
-    period,
-    compare: compare ? "1" : "0",
-  });
-
-  return `/history?${params.toString()}`;
-}
 
 export function HistoryPeriodNav({
   period,
   compare,
   comparisonLabel,
+  mode,
 }: HistoryPeriodNavProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function navigate(nextPeriod: DashboardPeriod, nextCompare: boolean) {
     startTransition(() => {
-      router.push(buildHistoryUrl(nextPeriod, nextCompare), {
+      router.push(buildHistoryUrl(nextPeriod, nextCompare, mode), {
         scroll: false,
       });
     });

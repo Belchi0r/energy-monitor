@@ -13,6 +13,7 @@ import type {
 } from "@/lib/dashboard/types";
 import { formatDashboardEventTimestamp } from "@/lib/dashboard/formatters";
 import { Panel } from "@/components/ui/Panel";
+import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
 const statusConfig: Record<
   ActivityStatus,
@@ -35,11 +36,12 @@ const statusConfig: Record<
   },
 };
 
-type RecentActivityTableProps = {
+export type RecentActivityTableProps = {
   activities: readonly RecentActivity[];
   activityTimeLabel: string;
   period: DashboardPeriod;
   periodLabel: string;
+  dataOrigin: DashboardViewData["dataOrigin"];
 };
 
 function ActivityStatusBadge({ status }: { status: ActivityStatus }) {
@@ -61,7 +63,9 @@ export function RecentActivityTable({
   activityTimeLabel,
   period,
   periodLabel,
+  dataOrigin,
 }: RecentActivityTableProps) {
+  const isDemo = dataOrigin === "global-demo";
   const formattedActivities = activities.map((activity) => ({
     ...activity,
     displayedOccurredAt: formatDashboardEventTimestamp(
@@ -73,7 +77,11 @@ export function RecentActivityTable({
   return (
     <Panel
       title="Atividade recente"
-      description={`Até cinco eventos simulados em ${periodLabel.toLocaleLowerCase("pt-BR")}`}
+      description={
+        isDemo
+          ? `Até cinco eventos simulados em ${periodLabel.toLocaleLowerCase("pt-BR")}`
+          : `Eventos da sua residência em ${periodLabel.toLocaleLowerCase("pt-BR")}`
+      }
     >
       {formattedActivities.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-8 text-center">
@@ -81,15 +89,20 @@ export function RecentActivityTable({
             Nenhuma atividade encontrada
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Selecione outro dispositivo para consultar os registros
-            demonstrativos.
+            {isDemo
+              ? "Nenhum registro demonstrativo está disponível neste período."
+              : "As atividades aparecerão quando houver medições disponíveis."}
           </p>
         </div>
       ) : (
         <>
           <ul
             className="space-y-2.5 md:hidden"
-            aria-label="Atividades simuladas recentes"
+            aria-label={
+              isDemo
+                ? "Atividades simuladas recentes"
+                : "Atividades recentes da residência"
+            }
           >
             {formattedActivities.map((activity) => (
               <li
@@ -107,7 +120,7 @@ export function RecentActivityTable({
                 </p>
                 <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium tabular-nums text-slate-500">
                   <Clock3 aria-hidden="true" className="size-3.5" />
-                  {activityTimeLabel} simulado:{" "}
+                  {activityTimeLabel}{isDemo ? " simulado" : ""}:{" "}
                   {activity.displayedOccurredAt}
                 </p>
               </li>
@@ -117,7 +130,9 @@ export function RecentActivityTable({
           <div className="hidden overflow-hidden rounded-xl border border-slate-200/80 md:block">
             <table className="w-full table-fixed border-collapse text-left">
               <caption className="sr-only">
-                Atividades recentes simuladas dos dispositivos
+                {isDemo
+                  ? "Atividades recentes simuladas dos dispositivos"
+                  : "Atividades recentes dos dispositivos"}
               </caption>
               <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>

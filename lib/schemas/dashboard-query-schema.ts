@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import { dashboardPeriods } from "@/lib/dashboard/periods";
+import {
+  isDashboardDataMode,
+  type DashboardDataMode,
+} from "@/lib/dashboard/types";
 
 export const dashboardQuerySchema = z
   .object({
@@ -9,6 +13,12 @@ export const dashboardQuerySchema = z
       .enum(["true", "false"])
       .default("false")
       .transform((value) => value === "true"),
+    mode: z
+      .string()
+      .optional()
+      .transform<DashboardDataMode>((value) =>
+        value && isDashboardDataMode(value) ? value : "home",
+      ),
   })
   .strict();
 

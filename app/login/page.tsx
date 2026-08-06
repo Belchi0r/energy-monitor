@@ -25,6 +25,18 @@ const publicMessages = {
     text: "O link de confirmação é inválido ou expirou. Solicite um novo cadastro ou tente novamente.",
     tone: "error",
   },
+  "password-updated": {
+    text: "Senha atualizada com sucesso. Entre novamente com sua nova senha.",
+    tone: "info",
+  },
+  "recovery-session-required": {
+    text: "O link de recuperação é inválido ou expirou. Solicite uma nova redefinição de senha.",
+    tone: "error",
+  },
+  "recovery-error": {
+    text: "Não foi possível validar este link de recuperação. Solicite uma nova redefinição de senha.",
+    tone: "error",
+  },
 } as const;
 
 function firstValue(value: string | string[] | undefined) {

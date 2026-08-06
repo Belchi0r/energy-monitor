@@ -5,26 +5,33 @@ import { useTransition } from "react";
 
 import { PeriodComparisonControl } from "@/components/dashboard/PeriodComparisonControl";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
-import type { DashboardPeriod } from "@/lib/dashboard/types";
+import type {
+  DashboardDataMode,
+  DashboardPeriod,
+} from "@/lib/dashboard/types";
 import { buildDashboardUrl } from "@/components/utils/dashboard-period";
 
 type DashboardPeriodControlsProps = {
   period: DashboardPeriod;
   compare: boolean;
   comparisonLabel: string;
+  mode: DashboardDataMode;
+  comparisonAvailable: boolean;
 };
 
 export function DashboardPeriodControls({
   period,
   compare,
   comparisonLabel,
+  mode,
+  comparisonAvailable,
 }: DashboardPeriodControlsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function navigate(nextPeriod: DashboardPeriod, nextCompare: boolean) {
     startTransition(() => {
-      router.push(buildDashboardUrl(nextPeriod, nextCompare), {
+      router.push(buildDashboardUrl(nextPeriod, nextCompare, mode), {
         scroll: false,
       });
     });
@@ -45,7 +52,8 @@ export function DashboardPeriodControls({
       <PeriodComparisonControl
         checked={compare}
         comparisonLabel={comparisonLabel}
-        disabled={isPending}
+        disabled={isPending || !comparisonAvailable}
+        unavailable={!comparisonAvailable}
         onChange={(nextCompare) => navigate(period, nextCompare)}
       />
       <p className="sr-only" aria-live="polite">

@@ -2,21 +2,27 @@
 
 import { UserRound, Zap } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { getCurrentNavigationItem } from "@/components/layout/navigation";
+import {
+  buildModeAwareNavigationHref,
+  resolveDashboardDataMode,
+} from "@/components/utils/dashboard-mode";
 
 export function Header() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mode = resolveDashboardDataMode(searchParams.get("mode"));
   const currentItem = getCurrentNavigationItem(pathname);
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur-sm">
       <div className="flex min-h-16 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-6 xl:px-8">
         <Link
-          href="/"
+          href={buildModeAwareNavigationHref("/", mode)}
           aria-label="Energy Monitor — ir para a visão geral"
           className="group flex min-w-0 items-center gap-2 rounded-xl sm:gap-3 xl:hidden"
         >
@@ -42,7 +48,7 @@ export function Header() {
           </p>
         </div>
 
-        <MobileNavigation pathname={pathname} />
+        <MobileNavigation pathname={pathname} mode={mode} />
 
         <div className="hidden shrink-0 items-center gap-3 xl:flex">
           <div className="text-right">

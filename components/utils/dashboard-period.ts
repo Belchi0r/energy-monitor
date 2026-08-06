@@ -1,4 +1,8 @@
-import type { DashboardPeriod } from "@/lib/dashboard/types";
+import type {
+  DashboardDataMode,
+  DashboardPeriod,
+} from "@/lib/dashboard/types";
+import { parseDashboardDataMode } from "@/components/utils/dashboard-mode";
 import {
   dashboardPeriodDefinitions,
   dashboardPeriods,
@@ -16,6 +20,7 @@ export {
 export type DashboardSearchParams = {
   period?: string | string[];
   compare?: string | string[];
+  mode?: string | string[];
 };
 
 function firstValue(value: string | string[] | undefined) {
@@ -26,23 +31,44 @@ export function parseDashboardSearchParams(params: DashboardSearchParams) {
   const periodValue = firstValue(params.period);
   const period =
     periodValue && isDashboardPeriod(periodValue) ? periodValue : "today";
+  const modeState = parseDashboardDataMode({ mode: params.mode });
+  const mode = modeState.mode;
+  const comparisonRequested = firstValue(params.compare) === "true";
+  const compare = mode === "demo" && comparisonRequested;
 
   return {
     period,
-    compare: firstValue(params.compare) === "true",
-    shouldRedirect: periodValue !== undefined && !isDashboardPeriod(periodValue),
+    compare,
+    mode,
+    shouldRedirect:
+      (periodValue !== undefined && !isDashboardPeriod(periodValue)) ||
+      modeState.shouldRedirect ||
+      (mode === "home" && comparisonRequested),
   };
 }
 
 export function buildDashboardUrl(
   period: DashboardPeriod,
   compare: boolean,
+  mode: DashboardDataMode,
 ) {
-  const searchParams = new URLSearchParams({ period });
+  const searchParams = new URLSearchParams({ mode, period });
 
-  if (compare) {
+  if (compare && mode === "demo") {
     searchParams.set("compare", "true");
   }
 
   return `/?${searchParams.toString()}`;
+}
+
+export function getDashboardCanonicalRedirect(
+  routeState: ReturnType<typeof parseDashboardSearchParams>,
+) {
+  return routeState.shouldRedirect
+    ? buildDashboardUrl(
+        routeState.period,
+        routeState.compare,
+        routeState.mode,
+      )
+    : null;
 }

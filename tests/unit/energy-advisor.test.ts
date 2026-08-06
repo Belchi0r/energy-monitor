@@ -471,6 +471,7 @@ describe("EnergyAdvisor", () => {
       {
         period: "today",
         compare: false,
+        mode: "home",
       },
       TEST_USER_ID,
     );
@@ -478,6 +479,7 @@ describe("EnergyAdvisor", () => {
       {
         period: "7d",
         compare: false,
+        mode: "demo",
       },
       TEST_USER_ID,
     );
@@ -501,6 +503,7 @@ describe("EnergyAdvisor", () => {
       {
         period: "today",
         compare: true,
+        mode: "home",
       },
       TEST_USER_ID,
     );
@@ -508,6 +511,7 @@ describe("EnergyAdvisor", () => {
       {
         period: "30d",
         compare: true,
+        mode: "demo",
       },
       TEST_USER_ID,
     );

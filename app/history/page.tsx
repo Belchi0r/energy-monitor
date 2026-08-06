@@ -1,34 +1,27 @@
+import { redirect } from "next/navigation";
+
 import { ChartInsights } from "@/components/dashboard/charts/ChartInsights";
+import { DashboardEmptyState } from "@/components/dashboard/DashboardEmptyState";
+import { DataModeSelector } from "@/components/dashboard/DataModeSelector";
 import { HistoryActivityView } from "@/components/dashboard/HistoryActivityView";
 import { HistoryPeriodNav } from "@/components/dashboard/HistoryPeriodNav";
 import { MetricsSection } from "@/components/dashboard/MetricsSection";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Panel } from "@/components/ui/Panel";
+import { buildDashboardUrl } from "@/components/utils/dashboard-period";
+import {
+  buildHistoryUrl,
+  getHistoryCanonicalRedirect,
+  parseHistorySearchParams,
+  type HistorySearchParams,
+} from "@/components/utils/history-route";
 import { dashboardService } from "@/lib/dashboard/application";
-import { isDashboardPeriod } from "@/lib/dashboard/periods";
 import { getEffectiveEnergyTariff } from "@/lib/energy/energy-tariff.server";
 import { requireUser } from "@/lib/supabase/require-user";
 
 type HistoryPageProps = {
-  searchParams: Promise<{
-    period?: string | string[];
-    compare?: string | string[];
-  }>;
+  searchParams: Promise<HistorySearchParams>;
 };
-
-function getSelectedPeriod(value: string | string[] | undefined) {
-  const selectedValue = Array.isArray(value) ? value[0] : value;
-
-  return selectedValue && isDashboardPeriod(selectedValue)
-    ? selectedValue
-    : "30d";
-}
-
-function getComparisonState(value: string | string[] | undefined) {
-  const selectedValue = Array.isArray(value) ? value[0] : value;
-
-  return selectedValue !== "0";
-}
 
 export default async function HistoryPage({
   searchParams,
@@ -39,15 +32,28 @@ export default async function HistoryPage({
       getEffectiveEnergyTariff(),
       requireUser(),
     ]);
-  const period = getSelectedPeriod(resolvedSearchParams.period);
-  const compare = getComparisonState(resolvedSearchParams.compare);
+  const routeState = parseHistorySearchParams(resolvedSearchParams);
+  const canonicalRedirect = getHistoryCanonicalRedirect(routeState);
+
+  if (canonicalRedirect) {
+    redirect(canonicalRedirect);
+  }
+
   const view = await dashboardService.getDashboard(
     {
-      period,
-      compare,
+      period: routeState.period,
+      compare: routeState.compare,
+      mode: routeState.mode,
     },
     user.id,
     tariffBrlPerKwh,
+  );
+  const isDemo = view.mode === "demo";
+  const homeHref = buildHistoryUrl(view.period, false, "home");
+  const demoHref = buildHistoryUrl(
+    view.period,
+    isDemo ? view.compare : true,
+    "demo",
   );
 
   return (
@@ -55,45 +61,74 @@ export default async function HistoryPage({
       <PageHeader
         eyebrow="Análise temporal"
         title="Histórico"
-        description="Explore períodos diferentes para compreender tendências, picos e mudanças no consumo residencial."
-        demoDescription="Os registros históricos e comparações são simulados. Alterações no cadastro atual não criam medições retroativas."
+        description={
+          isDemo
+            ? "Explore períodos diferentes para compreender tendências, picos e mudanças no cenário demonstrativo."
+            : "Consulte a disponibilidade de medições históricas da sua residência."
+        }
+        noticeTitle={isDemo ? "Modo demonstração" : "Minha residência"}
+        demoDescription={
+          isDemo
+            ? "Os registros históricos e comparações são simulados. Alterações no cadastro atual não criam medições retroativas."
+            : "Esta visão não utiliza datasets globais nem apresenta atividades simuladas."
+        }
+        action={
+          <DataModeSelector
+            mode={view.mode}
+            homeHref={homeHref}
+            demoHref={demoHref}
+          />
+        }
         showBackLink
+        backHref={buildDashboardUrl("today", false, view.mode)}
       />
 
       <div className="mt-8 space-y-6">
-        <Panel
-          title="Análise por período"
-          description={
-            compare
-              ? `Exibindo ${view.currentLabel.toLocaleLowerCase("pt-BR")} em comparação com ${view.definition.comparisonLabel}`
-              : `Exibindo somente ${view.currentLabel.toLocaleLowerCase("pt-BR")}`
-          }
-          className="min-w-0"
-        >
-          <HistoryPeriodNav
-            period={period}
-            compare={compare}
-            comparisonLabel={view.definition.comparisonLabel}
+        {view.emptyState ? (
+          <DashboardEmptyState
+            view={view}
+            primaryHref={buildDashboardUrl("today", false, "home")}
+            secondaryHref={demoHref}
           />
-          <div className="mt-5">
-            <ChartInsights
-              insights={view.temporalAnalysis.insights}
-              label="Principais conclusões do período histórico"
+        ) : (
+          <>
+            <Panel
+              title="Análise por período"
+              description={
+                view.compare
+                  ? `Exibindo ${view.currentLabel.toLocaleLowerCase("pt-BR")} em comparação com ${view.definition.comparisonLabel}`
+                  : `Exibindo somente ${view.currentLabel.toLocaleLowerCase("pt-BR")}`
+              }
+              className="min-w-0"
+            >
+              <HistoryPeriodNav
+                period={view.period}
+                compare={view.compare}
+                comparisonLabel={view.definition.comparisonLabel}
+                mode={view.mode}
+              />
+              <div className="mt-5">
+                <ChartInsights
+                  insights={view.temporalAnalysis.insights}
+                  label="Principais conclusões do período histórico"
+                />
+              </div>
+            </Panel>
+
+            <MetricsSection
+              metrics={view.metrics}
+              transitionKey={`history-${view.transitionKey}`}
             />
-          </div>
-        </Panel>
 
-        <MetricsSection
-          metrics={view.metrics}
-          transitionKey={`history-${view.transitionKey}`}
-        />
-
-        <HistoryActivityView
-          activities={view.activities}
-          activityTimeLabel={view.definition.activityTimeLabel}
-          period={view.period}
-          periodLabel={view.definition.label}
-        />
+            <HistoryActivityView
+              activities={view.activities}
+              activityTimeLabel={view.definition.activityTimeLabel}
+              period={view.period}
+              periodLabel={view.definition.label}
+              dataOrigin={view.dataOrigin}
+            />
+          </>
+        )}
       </div>
     </>
   );

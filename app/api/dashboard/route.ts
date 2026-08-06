@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
       meta: {
         period: result.data.period,
         compare: result.data.compare,
+        mode: result.data.mode,
         generatedAt: new Date().toISOString(),
       },
     };

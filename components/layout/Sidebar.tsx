@@ -1,16 +1,21 @@
 "use client";
 
-import {
-  BadgeInfo,
-  Zap,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Zap } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import {
+  DataModeIndicator,
+  resolveDataModeIndicatorContext,
+} from "@/components/layout/DataModeIndicator";
 import { NavigationLinks } from "@/components/layout/NavigationLinks";
+import { resolveDashboardDataMode } from "@/components/utils/dashboard-mode";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const mode = resolveDashboardDataMode(searchParams.get("mode"));
+  const indicatorContext = resolveDataModeIndicatorContext(pathname);
 
   return (
     <aside className="hidden w-68 shrink-0 bg-[linear-gradient(180deg,#020617_0%,#0f172a_100%)] text-slate-100 xl:sticky xl:top-0 xl:flex xl:h-screen xl:flex-col">
@@ -30,19 +35,10 @@ export function Sidebar() {
         <p className="px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           Monitoramento
         </p>
-        <NavigationLinks pathname={pathname} />
+        <NavigationLinks pathname={pathname} mode={mode} />
       </nav>
 
-      <div className="m-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-200">
-          <BadgeInfo aria-hidden="true" className="size-4 text-emerald-300" />
-          Modo demonstração
-        </div>
-        <p className="mt-2 text-xs leading-5 text-slate-500">
-          Estimativas e cenÃ¡rios demonstrativos, sem monitoramento em tempo
-          real.
-        </p>
-      </div>
+      <DataModeIndicator mode={mode} context={indicatorContext} />
 
       <div className="px-4 pb-4">
         <LogoutButton variant="dark" />

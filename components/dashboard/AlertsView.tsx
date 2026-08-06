@@ -9,6 +9,7 @@ import type {
   AlertSeverity,
   DashboardAlert,
 } from "@/lib/dashboard/alert-types";
+import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
 type AlertFilter = "all" | AlertSeverity;
 type AlertLocalState = "open" | "resolved" | "dismissed";
@@ -26,9 +27,11 @@ const alertFilters = [
 
 type AlertsViewProps = {
   alerts: readonly DashboardAlert[];
+  dataOrigin: DashboardViewData["dataOrigin"];
 };
 
-export function AlertsView({ alerts }: AlertsViewProps) {
+export function AlertsView({ alerts, dataOrigin }: AlertsViewProps) {
+  const isDemo = dataOrigin === "global-demo";
   const [filter, setFilter] = useState<AlertFilter>("all");
   const [alertStates, setAlertStates] = useState<
     Record<string, AlertLocalState>
@@ -68,7 +71,11 @@ export function AlertsView({ alerts }: AlertsViewProps) {
   return (
     <Panel
       title="Alertas inteligentes"
-      description="Ações e estados permanecem somente nesta sessão demonstrativa"
+      description={
+        isDemo
+          ? "Ações e estados permanecem somente nesta sessão demonstrativa"
+          : "Estimativas calculadas com os dispositivos vinculados à sua conta"
+      }
       className="min-w-0"
     >
       <div
@@ -133,7 +140,11 @@ export function AlertsView({ alerts }: AlertsViewProps) {
 
       {filteredAlerts.length > 0 ? (
         <ul
-          aria-label="Alertas demonstrativos filtrados"
+          aria-label={
+            isDemo
+              ? "Alertas demonstrativos filtrados"
+              : "Alertas residenciais filtrados"
+          }
           className="mt-5 space-y-3"
         >
           {filteredAlerts.map((alert, index) => (
@@ -153,8 +164,9 @@ export function AlertsView({ alerts }: AlertsViewProps) {
         </ul>
       ) : (
         <p className="mt-5 rounded-2xl border border-slate-200/80 bg-slate-50/60 p-5 text-sm leading-6 text-slate-600">
-          Nenhum alerta demonstrativo está disponível neste filtro. Alertas
-          dispensados voltam a aparecer ao recarregar a página.
+          {isDemo
+            ? "Nenhum alerta demonstrativo está disponível neste filtro. Alertas dispensados voltam a aparecer ao recarregar a página."
+            : "Nenhum alerta residencial está disponível neste filtro. Alertas dispensados voltam a aparecer ao recarregar a página."}
         </p>
       )}
     </Panel>

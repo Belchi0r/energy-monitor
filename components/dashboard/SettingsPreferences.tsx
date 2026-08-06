@@ -257,9 +257,11 @@ export function SettingsPreferences({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm leading-5 text-slate-600">
-                Enquanto o login não está disponível, a tarifa fica salva
-                neste navegador. Período e comparação continuam
-                demonstrativos e nada é enviado ao PostgreSQL.
+                A tarifa configurada participa das estimativas residenciais.
+                Estas preferências permanecem somente neste navegador e não
+                são salvas no PostgreSQL. Período e comparação controlam a
+                experiência de visualização; dados demonstrativos não alteram
+                os dispositivos da sua conta.
               </p>
               {saveStatus === "success" ? (
                 <p

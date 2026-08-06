@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -27,10 +27,22 @@ export function AppShell({ children }: AppShellProps) {
         Pular para o conteúdo
       </a>
 
-      <Sidebar />
+      <Suspense
+        fallback={
+          <aside className="hidden w-68 shrink-0 bg-slate-950 xl:block xl:h-screen" />
+        }
+      >
+        <Sidebar />
+      </Suspense>
 
       <div className="min-w-0 flex-1">
-        <Header />
+        <Suspense
+          fallback={
+            <div className="h-16 border-b border-slate-200/80 bg-white" />
+          }
+        >
+          <Header />
+        </Suspense>
 
         <main
           id="main-content"

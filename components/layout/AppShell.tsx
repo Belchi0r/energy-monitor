@@ -5,7 +5,7 @@ import { Suspense, type ReactNode } from "react";
 
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { isPublicAuthPagePath } from "@/lib/auth/routes";
+import { isAuthPagePath } from "@/lib/auth/routes";
 
 type AppShellProps = {
   children: ReactNode;
@@ -14,7 +14,7 @@ type AppShellProps = {
 export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
-  if (isPublicAuthPagePath(pathname)) {
+  if (isAuthPagePath(pathname)) {
     return <>{children}</>;
   }
 

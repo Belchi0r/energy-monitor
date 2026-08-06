@@ -27,7 +27,12 @@ export function LoginForm({
   const passwordError = state.fieldErrors?.password?.[0];
 
   return (
-    <form action={formAction} className="space-y-5" noValidate>
+    <form
+      action={formAction}
+      aria-busy={isPending}
+      className="space-y-5"
+      noValidate
+    >
       <input type="hidden" name="next" value={nextPath} />
 
       {notice ? (
@@ -44,11 +49,34 @@ export function LoginForm({
       ) : null}
 
       {state.status === "error" && state.message ? (
-        <div
-          role="alert"
-          className="rounded-xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm leading-5 text-rose-200"
-        >
-          {state.message}
+        <div className="space-y-3">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="rounded-xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm leading-5 text-rose-200"
+          >
+            {state.message}
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm leading-6 text-slate-300">
+            <p>
+              Ainda não possui conta?{" "}
+              <Link
+                href="/signup"
+                className="font-semibold text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
+              >
+                Criar conta
+              </Link>
+            </p>
+            <p>
+              Esqueceu sua senha?{" "}
+              <Link
+                href="/forgot-password"
+                className="font-semibold text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
+              >
+                Recuperar acesso
+              </Link>
+            </p>
+          </div>
         </div>
       ) : null}
 
@@ -87,6 +115,17 @@ export function LoginForm({
         error={passwordError}
       />
 
+      {state.status !== "error" ? (
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-semibold text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
+      ) : null}
+
       <button
         type="submit"
         disabled={isPending}
@@ -104,15 +143,17 @@ export function LoginForm({
         ) : null}
       </button>
 
-      <p className="text-center text-sm text-slate-400">
-        Ainda não tem uma conta?{" "}
-        <Link
-          href="/signup"
-          className="font-semibold text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
-        >
-          Criar conta
-        </Link>
-      </p>
+      {state.status !== "error" ? (
+        <p className="text-center text-sm text-slate-400">
+          Ainda não tem uma conta?{" "}
+          <Link
+            href="/signup"
+            className="font-semibold text-emerald-300 underline-offset-4 hover:text-emerald-200 hover:underline"
+          >
+            Criar conta
+          </Link>
+        </p>
+      ) : null}
     </form>
   );
 }

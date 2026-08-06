@@ -137,27 +137,56 @@ describe("proxy de autenticação", () => {
     );
   });
 
-  it("não mantém usuário autenticado no login", async () => {
+  it.each(["/login", "/signup", "/forgot-password"])(
+    "não mantém usuário autenticado na rota pública %s",
+    async (path) => {
     getClaimsMock.mockResolvedValueOnce({
       data: { claims: { sub: "authenticated-user" } },
       error: null,
     });
 
-    const response = await updateSession(
-      request("/login?next=%2Fdevices"),
-    );
+      const response = await updateSession(request(path));
 
-    expect(response.status).toBe(307);
-    expect(response.headers.get("location")).toBe("http://localhost/");
-  });
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toBe("http://localhost/");
+    },
+  );
 
-  it("permite login, cadastro e callback PKCE sem sessão", async () => {
-    for (const path of ["/login", "/signup", "/auth/callback"]) {
+  it("permite páginas públicas e callback PKCE sem sessão", async () => {
+    for (const path of [
+      "/login",
+      "/signup",
+      "/forgot-password",
+      "/auth/callback",
+    ]) {
       const response = await updateSession(request(path));
 
       expect(response.headers.get("location")).toBeNull();
       expect(response.headers.get("x-middleware-next")).toBe("1");
     }
+  });
+
+  it("protege /reset-password sem sessão e permite com sessão válida", async () => {
+    const anonymousResponse = await updateSession(request("/reset-password"));
+    const anonymousLocation = new URL(
+      anonymousResponse.headers.get("location")!,
+    );
+
+    expect(anonymousLocation.pathname).toBe("/login");
+    expect(anonymousLocation.searchParams.get("next")).toBe(
+      "/reset-password",
+    );
+
+    getClaimsMock.mockResolvedValueOnce({
+      data: { claims: { sub: "recovery-user" } },
+      error: null,
+    });
+
+    const authenticatedResponse = await updateSession(
+      request("/reset-password"),
+    );
+
+    expect(authenticatedResponse.headers.get("location")).toBeNull();
   });
 
   it("não transforma APIs sem sessão em redirecionamentos HTML", async () => {

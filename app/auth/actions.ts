@@ -5,6 +5,7 @@ import { cookies, headers } from "next/headers";
 import type { z } from "zod";
 
 import { resolveAppOrigin } from "@/lib/auth/origin";
+import { isPublicSignupEnabled } from "@/lib/auth/public-signup-config";
 import {
   clearRecoverySessionProof,
   createRecoverySessionProof,
@@ -209,6 +210,14 @@ export async function signupAction(
   _previousState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  if (!isPublicSignupEnabled()) {
+    return {
+      status: "error",
+      message:
+        "Novos cadastros estão temporariamente indisponíveis. Explore a demonstração ou entre em uma conta existente.",
+    };
+  }
+
   const values = formDataToObject(formData);
   const parsed = values
     ? signupFormSchema.safeParse(values)
@@ -349,6 +358,14 @@ export async function resendSignupConfirmationAction(
   _previousState: ResendConfirmationActionState,
   formData: FormData,
 ): Promise<ResendConfirmationActionState> {
+  if (!isPublicSignupEnabled()) {
+    return {
+      status: "error",
+      message:
+        "Novos cadastros estão temporariamente indisponíveis. Explore a demonstração ou entre em uma conta existente.",
+    };
+  }
+
   const extracted = extractEmailFormData(formData);
 
   if (!extracted.success) {

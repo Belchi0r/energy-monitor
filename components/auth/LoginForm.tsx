@@ -143,6 +143,13 @@ export function LoginForm({
         ) : null}
       </button>
 
+      <Link
+        href="/demo"
+        className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 transition-[border-color,background-color,color] hover:border-slate-600 hover:bg-white/[0.04] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 motion-reduce:transition-none"
+      >
+        Explorar demonstração
+      </Link>
+
       {state.status !== "error" ? (
         <p className="text-center text-sm text-slate-400">
           Ainda não tem uma conta?{" "}

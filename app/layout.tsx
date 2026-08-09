@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 
 import { AppShell } from "@/components/layout/AppShell";
@@ -13,6 +13,11 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Energy Monitor",
   description: "Dashboard para acompanhamento e análise de consumo de energia.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

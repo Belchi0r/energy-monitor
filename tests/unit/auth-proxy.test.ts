@@ -166,6 +166,22 @@ describe("proxy de autenticação", () => {
     }
   });
 
+  it("libera somente /demo antes de criar cliente ou consultar sessão", async () => {
+    const response = await updateSession(request("/demo?period=7d"));
+
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(createServerClientMock).not.toHaveBeenCalled();
+    expect(getClaimsMock).not.toHaveBeenCalled();
+  });
+
+  it("não amplia o bypass público para subcaminhos de /demo", async () => {
+    await updateSession(request("/demo/privado"));
+
+    expect(createServerClientMock).toHaveBeenCalledTimes(1);
+    expect(getClaimsMock).toHaveBeenCalledTimes(1);
+  });
+
   it("protege /reset-password sem sessão e permite com sessão válida", async () => {
     const anonymousResponse = await updateSession(request("/reset-password"));
     const anonymousLocation = new URL(

@@ -41,7 +41,7 @@ export function AuthFrame({
   return (
     <main
       id="main-content"
-      className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100"
+      className="relative min-h-dvh overflow-x-clip bg-slate-950 text-slate-100"
     >
       <div
         aria-hidden="true"
@@ -52,7 +52,7 @@ export function AuthFrame({
         className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(148,163,184,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.09)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
       />
 
-      <div className="relative mx-auto grid min-h-screen w-full max-w-[1380px] lg:grid-cols-[minmax(0,1fr)_minmax(28rem,0.78fr)]">
+      <div className="relative mx-auto grid min-h-dvh w-full max-w-[1380px] lg:grid-cols-[minmax(0,1fr)_minmax(28rem,0.78fr)]">
         <section className="flex flex-col px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10 xl:px-16">
           <Link
             href="/login"

@@ -5,6 +5,7 @@ import {
   isProtectedPagePath,
   isPublicAuthPagePath,
 } from "@/lib/auth/routes";
+import { isPublicDemoPagePath } from "@/components/utils/public-demo-route";
 
 const SUPABASE_CACHE_HEADERS = [
   "cache-control",
@@ -34,6 +35,10 @@ function redirectWithSessionCookies(
 }
 
 export async function updateSession(request: NextRequest) {
+  if (isPublicDemoPagePath(request.nextUrl.pathname)) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });

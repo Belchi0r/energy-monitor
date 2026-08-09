@@ -9,6 +9,7 @@ import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
 type DashboardPeriodHeaderProps = {
   view: DashboardViewData;
+  experience?: "account" | "public-demo";
 };
 
 export function getDashboardHeaderDescription(
@@ -33,9 +34,11 @@ export function getDashboardHeaderDescription(
 
 export function DashboardPeriodHeader({
   view,
+  experience = "account",
 }: DashboardPeriodHeaderProps) {
   const isToday = view.period === "today";
   const isDemo = view.mode === "demo";
+  const isPublicDemo = experience === "public-demo";
   const consumptionMetric = view.metrics.find(
     (metric) => metric.id === "periodConsumption",
   );
@@ -94,7 +97,7 @@ export function DashboardPeriodHeader({
         </aside>
       </div>
 
-      {isDemo ? (
+      {isDemo && !isPublicDemo ? (
         <aside
           aria-label="Aviso do modo demonstração"
           className="mt-4 flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
@@ -124,17 +127,19 @@ export function DashboardPeriodHeader({
       ) : null}
 
       <div className="mt-4 max-w-5xl rounded-2xl border border-slate-200/80 bg-white p-2 shadow-[var(--shadow-panel)]">
-        <div className="mb-2 sm:max-w-md">
-          <DataModeSelector
-            mode={view.mode}
-            homeHref={buildDashboardUrl(view.period, false, "home")}
-            demoHref={buildDashboardUrl(
-              view.period,
-              view.compare,
-              "demo",
-            )}
-          />
-        </div>
+        {!isPublicDemo ? (
+          <div className="mb-2 sm:max-w-md">
+            <DataModeSelector
+              mode={view.mode}
+              homeHref={buildDashboardUrl(view.period, false, "home")}
+              demoHref={buildDashboardUrl(
+                view.period,
+                view.compare,
+                "demo",
+              )}
+            />
+          </div>
+        ) : null}
         <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
           <DashboardPeriodControls
             period={view.period}
@@ -142,6 +147,7 @@ export function DashboardPeriodHeader({
             comparisonLabel={view.definition.comparisonLabel}
             mode={view.mode}
             comparisonAvailable={view.comparisonAvailable}
+            experience={experience}
           />
           <p className="flex min-h-10 shrink-0 items-center rounded-xl bg-slate-50 px-3.5 text-xs font-medium text-slate-500 xl:ml-auto">
             Exibindo{" "}

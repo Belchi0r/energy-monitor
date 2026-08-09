@@ -64,4 +64,12 @@ describe("layout das rotas de autenticação", () => {
     expect(markup).toContain("DASHBOARD_SIDEBAR");
     expect(markup).toContain("PAGE_CONTENT");
   });
+
+  it("mantém /demo fora do shell autenticado da conta", () => {
+    const markup = renderAppShell("/demo");
+
+    expect(markup).toContain("PAGE_CONTENT");
+    expect(markup).not.toContain("DASHBOARD_HEADER");
+    expect(markup).not.toContain("DASHBOARD_SIDEBAR");
+  });
 });

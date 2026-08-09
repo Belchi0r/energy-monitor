@@ -5,6 +5,7 @@ import { useTransition } from "react";
 
 import { PeriodComparisonControl } from "@/components/dashboard/PeriodComparisonControl";
 import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
+import { buildPublicDemoUrl } from "@/components/utils/public-demo-route";
 import type {
   DashboardDataMode,
   DashboardPeriod,
@@ -17,6 +18,7 @@ type DashboardPeriodControlsProps = {
   comparisonLabel: string;
   mode: DashboardDataMode;
   comparisonAvailable: boolean;
+  experience?: "account" | "public-demo";
 };
 
 export function DashboardPeriodControls({
@@ -25,13 +27,19 @@ export function DashboardPeriodControls({
   comparisonLabel,
   mode,
   comparisonAvailable,
+  experience = "account",
 }: DashboardPeriodControlsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function navigate(nextPeriod: DashboardPeriod, nextCompare: boolean) {
     startTransition(() => {
-      router.push(buildDashboardUrl(nextPeriod, nextCompare, mode), {
+      const href =
+        experience === "public-demo"
+          ? buildPublicDemoUrl(nextPeriod, nextCompare)
+          : buildDashboardUrl(nextPeriod, nextCompare, mode);
+
+      router.push(href, {
         scroll: false,
       });
     });

@@ -13,6 +13,8 @@ import {
 } from "@/lib/auth/state";
 import { resetPasswordFormSchema } from "@/lib/auth/validation";
 
+vi.mock("server-only", () => ({}));
+
 const {
   clearRecoverySessionProofMock,
   createClientMock,
@@ -80,6 +82,7 @@ function formData(values: Record<string, string | undefined>) {
 beforeEach(() => {
   vi.stubEnv("NODE_ENV", "development");
   vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+  vi.stubEnv("AUTH_PUBLIC_SIGNUP_ENABLED", "true");
   createClientMock.mockReset();
   clearRecoverySessionProofMock.mockReset();
   getRecoveryAuthContextMock.mockReset();
@@ -247,6 +250,27 @@ describe("ações de autenticação", () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
+  it("não executa cadastro nem cria cliente quando o cadastro público está desativado", async () => {
+    vi.stubEnv("AUTH_PUBLIC_SIGNUP_ENABLED", "false");
+
+    const result = await signupAction(
+      INITIAL_AUTH_ACTION_STATE,
+      formData({
+        email: "new@example.com",
+        password: "senha-com-8",
+        confirmPassword: "senha-com-8",
+      }),
+    );
+
+    expect(result).toEqual({
+      status: "error",
+      message:
+        "Novos cadastros estão temporariamente indisponíveis. Explore a demonstração ou entre em uma conta existente.",
+    });
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(signUpMock).not.toHaveBeenCalled();
+  });
+
   it("rejeita senhas diferentes antes de chamar o Supabase", async () => {
     const result = await signupAction(
       INITIAL_AUTH_ACTION_STATE,
@@ -361,6 +385,20 @@ describe("ações de autenticação", () => {
     expect(JSON.stringify(result)).not.toMatch(
       /user@example\.com|ignored-test-value/i,
     );
+  });
+
+  it("não envia reenvio de cadastro quando o cadastro público está desativado", async () => {
+    vi.stubEnv("AUTH_PUBLIC_SIGNUP_ENABLED", "false");
+
+    const result = await resendSignupConfirmationAction(
+      { status: "idle" },
+      formData({ email: "pending@example.com" }),
+    );
+
+    expect(result.status).toBe("error");
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(resendMock).not.toHaveBeenCalled();
+    expect(JSON.stringify(result)).not.toContain("pending@example.com");
   });
 
   it("rejeita e-mail ausente, não textual ou duplicado no reenvio", async () => {

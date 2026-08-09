@@ -570,9 +570,35 @@ function SignupActionFlow({
 
 type SignupFormProps = {
   emailOtpEnabled: boolean;
+  publicSignupEnabled: boolean;
 };
 
-export function SignupForm({ emailOtpEnabled }: SignupFormProps) {
+export function PublicSignupUnavailable() {
+  return (
+    <div className="space-y-3">
+      <Link
+        href="/demo"
+        className="group flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-950/30 transition-[background-color,transform,box-shadow] hover:bg-emerald-300 hover:shadow-emerald-950/45 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 motion-reduce:transform-none motion-reduce:transition-none"
+      >
+        Explorar demonstração
+        <ArrowRight
+          aria-hidden="true"
+          className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+        />
+      </Link>
+      <Link
+        href="/login"
+        className="flex min-h-12 w-full items-center justify-center rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-600 hover:bg-white/[0.04] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 motion-reduce:transition-none"
+      >
+        Entrar
+      </Link>
+    </div>
+  );
+}
+
+function EnabledSignupForm({
+  emailOtpEnabled,
+}: Pick<SignupFormProps, "emailOtpEnabled">) {
   const [email, setEmail] = useState("");
   const [attemptNumber, setAttemptNumber] = useState(0);
 
@@ -585,5 +611,16 @@ export function SignupForm({ emailOtpEnabled }: SignupFormProps) {
       autoFocusEmail={attemptNumber > 0}
       onChangeEmail={() => setAttemptNumber((current) => current + 1)}
     />
+  );
+}
+
+export function SignupForm({
+  emailOtpEnabled,
+  publicSignupEnabled,
+}: SignupFormProps) {
+  return publicSignupEnabled ? (
+    <EnabledSignupForm emailOtpEnabled={emailOtpEnabled} />
+  ) : (
+    <PublicSignupUnavailable />
   );
 }

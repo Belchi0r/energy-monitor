@@ -7,8 +7,9 @@ import {
   vi,
 } from "vitest";
 
-const { getCookieMock } = vi.hoisted(() => ({
+const { getCookieMock, requireUserMock } = vi.hoisted(() => ({
   getCookieMock: vi.fn(),
+  requireUserMock: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({
@@ -16,6 +17,17 @@ vi.mock("next/headers", () => ({
     get: getCookieMock,
   })),
 }));
+
+vi.mock("@/lib/supabase/require-user", async (importOriginal) => {
+  const original = await importOriginal<
+    typeof import("@/lib/supabase/require-user")
+  >();
+
+  return {
+    ...original,
+    requireUser: requireUserMock,
+  };
+});
 
 import { POST } from "@/app/api/settings/energy-tariff/route";
 import { DEFAULT_ENERGY_TARIFF_BRL_PER_KWH } from "@/lib/energy/energy-engine.constants";
@@ -40,6 +52,8 @@ function createRequest(tariff: unknown) {
 
 beforeEach(() => {
   getCookieMock.mockReset();
+  requireUserMock.mockReset();
+  requireUserMock.mockResolvedValue({ id: "authenticated-user" });
 });
 
 afterEach(() => {
@@ -101,6 +115,28 @@ describe("persistência server-side da tarifa", () => {
 
     getCookieMock.mockReturnValue({ value: cookieValue });
     await expect(getEffectiveEnergyTariff()).resolves.toBe(1);
+  });
+
+  it("retorna 401 sem sessão e não grava a tarifa", async () => {
+    const { AuthenticationRequiredError } = await import(
+      "@/lib/supabase/require-user"
+    );
+    requireUserMock.mockRejectedValueOnce(
+      new AuthenticationRequiredError(),
+    );
+
+    const response = await POST(createRequest("1,00"));
+    const body = (await response.json()) as {
+      success: boolean;
+      message: string;
+    };
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      success: false,
+      message: "Autenticação necessária.",
+    });
+    expect(response.headers.get("set-cookie")).toBeNull();
   });
 
   it.each(["", "texto", "0", "-1", "NaN", "Infinity", "10.01"])(

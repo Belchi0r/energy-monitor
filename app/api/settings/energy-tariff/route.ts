@@ -7,6 +7,10 @@ import {
   formatEnergyTariffInput,
   serializeEnergyTariff,
 } from "@/lib/energy/energy-tariff";
+import {
+  AuthenticationRequiredError,
+  requireUser,
+} from "@/lib/supabase/require-user";
 
 type ErrorResponse = {
   success: false;
@@ -14,6 +18,22 @@ type ErrorResponse = {
 };
 
 export async function POST(request: Request) {
+  try {
+    await requireUser();
+  } catch (error) {
+    const response: ErrorResponse = {
+      success: false,
+      message:
+        error instanceof AuthenticationRequiredError
+          ? "Autenticação necessária."
+          : "Não foi possível salvar a tarifa agora.",
+    };
+
+    return Response.json(response, {
+      status: error instanceof AuthenticationRequiredError ? 401 : 500,
+    });
+  }
+
   let body: unknown;
 
   try {

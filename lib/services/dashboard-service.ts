@@ -27,6 +27,7 @@ import {
 } from "@/lib/dashboard/period-efficiency";
 import {
   formatChartEnergy,
+  formatDayCount,
   formatMetricNumber,
 } from "@/lib/dashboard/formatters";
 import {
@@ -240,7 +241,7 @@ function buildHistoricalMetrics(
       title: "Consumo no período",
       value: total,
       format: "energy",
-      description: `Total simulado em ${current.daysCount} dias`,
+      description: `Total simulado em ${formatDayCount(current.daysCount)}`,
       comparison: comparison(total, previousTotal),
     },
     {

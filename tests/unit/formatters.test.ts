@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatChartEnergy,
   formatDashboardEventTimestamp,
+  formatDayCount,
   formatDecimal,
   formatDetailedPercentage,
   formatEnergy,
@@ -15,6 +16,14 @@ import {
 } from "@/lib/dashboard/formatters";
 
 describe("formatadores numéricos", () => {
+  it.each([
+    [1, "1 dia"],
+    [2, "2 dias"],
+    [0, "0 dias"],
+  ])("formata a contagem de %i dias", (value, expected) => {
+    expect(formatDayCount(value)).toBe(expected);
+  });
+
   it("formata energia com precisão adequada ao contexto", () => {
     expect(formatDecimal(8.74)).toBe("8,7");
     expect(formatEnergy(8.7)).toBe("8,7 kWh");

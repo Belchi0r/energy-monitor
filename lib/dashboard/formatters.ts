@@ -141,6 +141,10 @@ export function formatDecimal(value: number) {
   return decimalFormatter.format(value);
 }
 
+export function formatDayCount(value: number) {
+  return `${value} ${value === 1 ? "dia" : "dias"}`;
+}
+
 export function formatEnergy(value: number) {
   return `${formatDecimal(value)} kWh`;
 }

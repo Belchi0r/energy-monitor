@@ -1,118 +1,293 @@
 # Energy Monitor
 
-Aplicação full stack para estimar, acompanhar e compreender o consumo energético residencial com histórico persistente e isolamento por usuário.
+Aplicação full stack para **estimativa, acompanhamento e análise de consumo energético residencial**, com autenticação, persistência histórica, isolamento por usuário e visualização de dados.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
-![React](https://img.shields.io/badge/React-19-087ea4?style=flat-square&logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-556%20passing-16a34a?style=flat-square)
-![Vercel](https://img.shields.io/badge/deploy-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+![React](https://img.shields.io/badge/React-19-087EA4?style=flat-square&logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-556%20passing-16A34A?style=flat-square)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
-**[Acessar a aplicação](https://energy-monitor-black.vercel.app)** · **[Ver o repositório](https://github.com/Belchi0r/energy-monitor)**
+**[Acessar aplicação](https://energy-monitor-black.vercel.app)** · **[Explorar demonstração](https://energy-monitor-black.vercel.app/demo)** · **[Repositório](https://github.com/Belchi0r/energy-monitor)**
+
+---
 
 ## Visão geral
 
-O Energy Monitor centraliza o cadastro de dispositivos residenciais, estima consumo e custos e transforma esses dados em indicadores, gráficos, alertas e recomendações práticas. O projeto explora uma arquitetura full stack com renderização no servidor, APIs REST, persistência relacional e autenticação por usuário.
+O **Energy Monitor** foi desenvolvido para transformar informações de uso de equipamentos residenciais em uma visão clara de consumo, custos e comportamento energético.
 
-As estimativas são calculadas a partir da potência, do tempo médio de uso e do perfil de utilização dos dispositivos cadastrados. A versão atual não recebe dados de sensores, não realiza telemetria em tempo real e não utiliza IA ou machine learning.
+A aplicação permite cadastrar dispositivos, configurar seus perfis de utilização e acompanhar estimativas por meio de dashboards, comparações entre períodos, histórico persistente, alertas e recomendações.
+
+Além da interface, o projeto explora conceitos de engenharia de software como:
+
+- autenticação e sessões SSR;
+- arquitetura em camadas;
+- Repository Pattern;
+- Service Layer;
+- APIs REST;
+- persistência relacional;
+- validação de dados;
+- isolamento de dados por usuário;
+- histórico incremental;
+- testes automatizados;
+- deploy em produção.
+
+> [!NOTE]
+> O Energy Monitor atualmente trabalha com **estimativas calculadas a partir dos dispositivos cadastrados, potência e perfil de utilização**.  
+> Esta versão não utiliza sensores físicos, telemetria em tempo real, inteligência artificial ou machine learning.
+
+---
 
 ## Demonstração
 
 ### Dashboard
 
-<!-- Adicionar screenshot profissional da dashboard. -->
+Visão consolidada do consumo energético, custos estimados, eficiência, comparação entre períodos e principais indicadores da residência.
 
-_Espaço reservado para uma captura da visão geral de consumo._
+![Dashboard do Energy Monitor](./public/screenshots/dashboard.png)
 
 ### Dispositivos
 
-<!-- Adicionar screenshot profissional da gestão de dispositivos. -->
+Gerenciamento dos equipamentos vinculados à conta, com persistência dos registros e estimativa individual de consumo.
 
-_Espaço reservado para uma captura do cadastro e dos perfis de uso._
+![Gerenciamento de dispositivos](./public/screenshots/devices.png)
 
 ### Histórico
 
-<!-- Adicionar screenshot profissional do histórico. -->
+Análise do comportamento energético por período, comparação com períodos anteriores e acompanhamento da evolução do consumo.
 
-_Espaço reservado para uma captura das análises e comparações entre períodos._
+![Histórico de consumo](./public/screenshots/history.png)
+
+### Análise de consumo
+
+Visualização temporal do consumo, distribuição por dispositivo, ranking, alertas e eventos relevantes.
+
+![Análise energética](./public/screenshots/analytics.png)
+
+---
 
 ## Principais funcionalidades
 
-- Cadastro, autenticação, confirmação de e-mail e recuperação de senha.
-- Dashboard com estimativas de consumo em kWh e custo em reais.
-- Cadastro, edição e remoção de dispositivos com perfis de utilização.
-- Tarifa personalizada, persistida por usuário e sincronizada entre dispositivos.
-- Análises de hoje, 7 dias e 30 dias, com comparações quando há histórico suficiente.
-- Histórico incremental com snapshots diários da residência e de cada dispositivo.
-- Gráficos, distribuição de consumo, timeline de atividades e indicadores por período.
-- Alertas e recomendações determinísticas baseados em regras de consumo.
-- APIs REST com validação de entradas e parâmetros por Zod.
-- Interface responsiva e demonstração pública somente leitura, isolada dos dados privados.
+### Autenticação
+
+- criação de conta;
+- login e logout;
+- confirmação de e-mail;
+- recuperação de senha;
+- gerenciamento de sessão com Supabase Auth;
+- proteção de páginas e operações privadas.
+
+### Monitoramento energético
+
+- dashboard com estimativa de consumo em kWh;
+- cálculo de custo energético em reais;
+- tarifa personalizada por usuário;
+- sincronização da tarifa entre diferentes dispositivos;
+- análise de **Hoje**, **7 dias** e **30 dias**;
+- comparação com períodos anteriores quando existe histórico suficiente.
+
+### Dispositivos
+
+- cadastro de equipamentos;
+- edição;
+- remoção;
+- ativação e configuração de perfil de uso;
+- cálculo individual de consumo;
+- identificação dos dispositivos com maior impacto energético.
+
+### Histórico
+
+- snapshots diários por usuário;
+- snapshots individuais por dispositivo;
+- histórico incremental;
+- preservação dos dados anteriores;
+- comparação entre períodos baseada somente nos registros realmente disponíveis.
+
+### Análises
+
+- evolução temporal do consumo;
+- distribuição por dispositivo;
+- ranking de consumo;
+- identificação de picos;
+- indicadores de eficiência;
+- alertas energéticos;
+- recomendações determinísticas;
+- timeline de eventos.
+
+### Demonstração pública
+
+A rota `/demo` disponibiliza uma versão somente leitura da aplicação utilizando dados simulados.
+
+Essa demonstração é isolada dos dispositivos, histórico e informações privadas dos usuários autenticados.
+
+---
 
 ## Arquitetura
 
-As páginas renderizadas no servidor e os Route Handlers reutilizam regras de negócio concentradas na camada de serviços. O acesso a dados passa por contratos de repositório, mantendo a persistência desacoplada da interface e das APIs.
+O projeto utiliza uma arquitetura em camadas para separar interface, regras de negócio e persistência.
 
 ```mermaid
 flowchart LR
-    UI["UI — App Router e React"] --> Routes["Pages SSR e Route Handlers"]
-    Routes --> Services["Service Layer"]
-    Services --> Repositories["Repositories"]
-    Repositories --> Prisma["Prisma ORM"]
-    Prisma --> Database["PostgreSQL / Supabase"]
+    UI["UI<br/>Next.js + React"]
+    Routes["Pages SSR<br/>Route Handlers / APIs"]
+    Services["Service Layer"]
+    Repositories["Repository Layer"]
+    Prisma["Prisma ORM"]
+    Database["PostgreSQL<br/>Supabase"]
+    Auth["Supabase Auth"]
 
-    UI --> Auth["Supabase Auth"]
+    UI --> Routes
+    Routes --> Services
+    Services --> Repositories
+    Repositories --> Prisma
+    Prisma --> Database
+
+    UI --> Auth
     Routes --> Auth
 ```
 
-A demonstração pública utiliza uma fonte de dados simulada e isolada, sem consultar dispositivos ou histórico de usuários autenticados.
+### Fluxo principal
+
+```text
+Interface
+   ↓
+Pages / Route Handlers
+   ↓
+Services
+   ↓
+Repositories
+   ↓
+Prisma ORM
+   ↓
+PostgreSQL
+```
+
+Essa separação reduz o acoplamento entre interface e banco de dados e permite concentrar as regras de negócio em camadas específicas.
+
+---
 
 ## Persistência histórica
 
-O histórico é construído incrementalmente em duas entidades principais:
+O histórico energético é construído de forma incremental.
 
-- `DailyEnergySnapshot`: consolida consumo, custo, quantidade de dispositivos ativos e tarifa de um usuário em uma data.
-- `DailyDeviceEnergySnapshot`: preserva a participação estimada e o nome de cada dispositivo naquele snapshot.
+Duas entidades principais armazenam os dados:
 
-Cada usuário possui no máximo um snapshot por dia. Registros anteriores permanecem congelados, dias sem captura continuam ausentes e não são preenchidos artificialmente com zero. Comparações entre períodos só são disponibilizadas quando a cobertura necessária existe nos dados persistidos.
+### `DailyEnergySnapshot`
+
+Representa o estado consolidado de consumo de um usuário em determinada data.
+
+Armazena informações como:
+
+- consumo total;
+- custo estimado;
+- quantidade de dispositivos ativos;
+- tarifa utilizada naquele dia.
+
+### `DailyDeviceEnergySnapshot`
+
+Preserva a participação dos dispositivos dentro de cada snapshot diário.
+
+Isso permite manter informações históricas mesmo que os dispositivos sejam posteriormente alterados.
+
+### Comportamento do histórico
+
+- cada usuário possui no máximo um snapshot por dia;
+- o snapshot atual pode ser atualizado durante o mesmo dia;
+- snapshots de dias anteriores permanecem preservados;
+- dias sem registro permanecem ausentes;
+- dias inexistentes não são preenchidos artificialmente com zero;
+- comparações são exibidas apenas quando existe cobertura histórica suficiente.
+
+Essa abordagem evita apresentar dados que nunca foram realmente registrados pelo sistema.
+
+---
 
 ## Cálculo energético
 
-O consumo diário estimado de cada dispositivo parte da fórmula:
+A estimativa diária de cada equipamento utiliza sua potência e tempo médio de utilização.
 
 ```text
-consumo (kWh) = potência (W) / 1000 × horas médias de uso por dia
-custo estimado = consumo (kWh) × tarifa (R$/kWh)
+consumo (kWh)
+=
+potência (W) / 1000
+×
+horas médias de uso por dia
 ```
 
-Os perfis de utilização distribuem essa estimativa ao longo do dia para compor gráficos, picos e análises temporais. As recomendações são geradas por regras determinísticas sobre esses resultados.
+O custo é calculado utilizando a tarifa configurada pelo usuário:
 
-> O Energy Monitor trabalha atualmente com estimativas baseadas nos dispositivos cadastrados. Não existe medição física em tempo real nesta versão.
+```text
+custo estimado
+=
+consumo (kWh)
+×
+tarifa (R$/kWh)
+```
 
-## Tecnologias
+Os perfis de utilização distribuem essas estimativas ao longo do dia para compor gráficos, análises temporais e identificação de picos.
+
+As recomendações e alertas são baseados em **regras determinísticas de domínio**, e não em modelos de inteligência artificial.
+
+---
+
+## Stack
 
 | Área | Tecnologias |
-| --- | --- |
-| Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS, Motion, Recharts |
-| Backend | Next.js App Router, Server Actions, Route Handlers, APIs REST |
-| Banco de dados | PostgreSQL, Supabase, Prisma ORM |
-| Autenticação | Supabase Auth, `@supabase/ssr` |
-| Validação | Zod |
-| Testes e qualidade | Vitest, ESLint, TypeScript strict |
-| Versionamento | Git, GitHub |
-| Deploy | Vercel |
+|---|---|
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS, Motion, Recharts |
+| **Backend** | Next.js App Router, Server Actions, Route Handlers, APIs REST |
+| **Banco de dados** | PostgreSQL, Supabase |
+| **ORM** | Prisma |
+| **Autenticação** | Supabase Auth, `@supabase/ssr` |
+| **Validação** | Zod |
+| **Testes** | Vitest |
+| **Qualidade** | ESLint, TypeScript strict |
+| **Versionamento** | Git, GitHub |
+| **Deploy** | Vercel |
+
+---
+
+## Decisões de engenharia
+
+Alguns pontos do projeto foram tratados além da camada visual.
+
+### Persistência da tarifa
+
+A tarifa energética pertence ao usuário e é persistida no backend, permitindo que o mesmo valor seja recuperado após novo login ou acesso em outro dispositivo.
+
+### Histórico sem fabricação de dados
+
+O sistema não cria registros artificiais para dias nos quais não existe histórico.
+
+Isso significa que uma comparação só é apresentada quando os dados necessários realmente existem.
+
+### Separação de domínio e persistência
+
+Regras de negócio ficam concentradas em services enquanto repositories abstraem o acesso ao banco de dados.
+
+### Demo isolada
+
+A demonstração pública utiliza datasets simulados e não acessa dados privados ou históricos pertencentes a usuários autenticados.
+
+### Histórico imutável de períodos anteriores
+
+Dados de dias anteriores são preservados, evitando que alterações atuais reescrevam artificialmente o passado.
+
+---
 
 ## Testes e qualidade
 
-A validação final do projeto inclui:
+A versão atual foi validada com:
 
-- 49 arquivos de teste e 556 testes aprovados.
-- ESLint sem erros.
-- verificação de tipos com TypeScript strict.
-- build de produção concluído.
-- aplicação publicada e funcional na Vercel.
+- **49 arquivos de teste aprovados**;
+- **556 testes aprovados**;
+- ESLint sem erros;
+- verificação de tipos com TypeScript strict;
+- build de produção concluído com sucesso;
+- deploy funcional na Vercel.
 
-Comandos utilizados no fluxo de validação:
+Fluxo utilizado na validação:
 
 ```bash
 npm test
@@ -121,32 +296,50 @@ npx tsc --noEmit --incremental false
 npm run build
 ```
 
+---
+
 ## Segurança
 
-- Autenticação e sessão SSR gerenciadas pelo Supabase Auth.
-- Rotas e APIs privadas exigem um usuário autenticado.
-- Consultas e operações de dispositivos são sempre filtradas pelo identificador do usuário.
-- Row Level Security habilitada para dispositivos e tabelas de histórico, com políticas de acesso aos próprios snapshots.
-- Cookies de sessão protegidos no fluxo SSR e prova temporária assinada para recuperação de senha.
-- Validação de payloads e parâmetros com Zod.
-- Demo pública somente leitura com fronteira explícita para não acessar dados privados.
+O projeto utiliza diferentes mecanismos para proteger dados e operações privadas:
+
+- autenticação utilizando Supabase Auth;
+- sessões integradas ao fluxo SSR;
+- páginas e APIs privadas condicionadas à autenticação;
+- operações de dispositivos filtradas pelo identificador do usuário autenticado;
+- Row Level Security nas tabelas de histórico;
+- políticas de acesso aos snapshots pertencentes ao próprio usuário;
+- validação de payloads e parâmetros com Zod;
+- demonstração pública isolada dos dados privados.
+
+A arquitetura evita utilizar a interface como única camada de controle de acesso.
+
+---
 
 ## Executando localmente
 
 ### Pré-requisitos
 
-- Node.js e npm.
-- Um projeto Supabase com PostgreSQL e Auth configurados.
+- Node.js;
+- npm;
+- projeto Supabase;
+- PostgreSQL configurado.
 
-### Instalação
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/Belchi0r/energy-monitor.git
 cd energy-monitor
+```
+
+### 2. Instale as dependências
+
+```bash
 npm ci
 ```
 
-Crie um arquivo `.env` local. Os arquivos de ambiente já são ignorados pelo Git.
+### 3. Configure as variáveis de ambiente
+
+Crie um arquivo `.env` ou `.env.local`.
 
 ```dotenv
 DATABASE_URL="postgresql://<usuario>:<senha>@<host>:<porta>/<banco>"
@@ -154,46 +347,115 @@ DIRECT_URL="postgresql://<usuario>:<senha>@<host>:<porta>/<banco>"
 
 NEXT_PUBLIC_SUPABASE_URL="https://<project-ref>.supabase.co"
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="<chave-publicavel>"
+
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 
-AUTH_RECOVERY_PROOF_SECRET="<segredo-com-pelo-menos-32-bytes>"
+AUTH_RECOVERY_PROOF_SECRET="<segredo-local-seguro>"
 AUTH_PUBLIC_SIGNUP_ENABLED="true"
 AUTH_EMAIL_OTP_ENABLED="false"
 ```
 
-No Supabase Auth, adicione `http://localhost:3000/auth/confirm` e `http://localhost:3000/auth/callback` à lista de URLs de redirecionamento permitidas. Em seguida, aplique as migrations existentes e inicie o servidor:
+Nunca versione credenciais reais.
+
+### 4. Configure os redirects no Supabase Auth
+
+Adicione:
+
+```text
+http://localhost:3000/auth/confirm
+http://localhost:3000/auth/callback
+```
+
+### 5. Aplique as migrations
 
 ```bash
 npx prisma migrate deploy
+```
+
+### 6. Inicie o projeto
+
+```bash
 npm run dev
 ```
 
-A aplicação ficará disponível em [http://localhost:3000](http://localhost:3000), e a demonstração pública em [http://localhost:3000/demo](http://localhost:3000/demo).
+Aplicação:
+
+```text
+http://localhost:3000
+```
+
+Demonstração pública:
+
+```text
+http://localhost:3000/demo
+```
+
+---
 
 ## Estrutura do projeto
 
 ```text
-app/          páginas, Server Actions e Route Handlers
-components/   autenticação, dashboard, layout e componentes de UI
-lib/          regras de domínio, serviços, repositórios, schemas e integrações
-prisma/       schema, migrations e seed
-tests/        testes unitários e de integração
-public/       arquivos estáticos
+energy-monitor/
+│
+├── app/
+│   ├── api/
+│   ├── auth/
+│   ├── devices/
+│   ├── history/
+│   ├── settings/
+│   └── ...
+│
+├── components/
+│   ├── auth/
+│   ├── dashboard/
+│   └── ...
+│
+├── lib/
+│   ├── repositories/
+│   ├── services/
+│   ├── energy/
+│   └── ...
+│
+├── prisma/
+│   ├── migrations/
+│   └── schema.prisma
+│
+├── public/
+│   └── screenshots/
+│
+└── tests/
+    ├── integration/
+    └── unit/
 ```
+
+---
 
 ## Roadmap
 
 Possibilidades para versões futuras:
 
-- integração com sensores físicos e dispositivos IoT;
-- leitura automatizada de medidores de energia;
-- exportação de relatórios em CSV e PDF;
-- dashboards e recortes analíticos adicionais.
+- integração com sensores físicos;
+- comunicação com dispositivos IoT;
+- leitura automatizada de medidores;
+- ingestão de dados energéticos reais;
+- exportação de relatórios em CSV;
+- geração de relatórios em PDF;
+- novos dashboards e recortes analíticos.
+
+Esses itens representam evolução futura e **não fazem parte da versão atual**.
+
+---
 
 ## Autor
 
-**Luan Belchior**
+### Luan Belchior
 
-Engenharia e desenvolvimento Full Stack
+Estudante de Engenharia na Universidade de Brasília (UnB) com foco em desenvolvimento Full Stack, software e tecnologia.
 
 [GitHub](https://github.com/Belchi0r) · [LinkedIn](https://www.linkedin.com/in/luan-belchior-dev/)
+
+---
+
+<p align="center">
+  Desenvolvido como projeto de engenharia de software e desenvolvimento Full Stack.
+</p>

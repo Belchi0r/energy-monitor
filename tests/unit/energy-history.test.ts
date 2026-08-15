@@ -187,6 +187,32 @@ describe("histórico energético persistente", () => {
     expect(repository.getAll(TEST_USER_ID)).toHaveLength(1);
   });
 
+  it("recupera o snapshot mais recente da conta sem misturar usuários", async () => {
+    const repository = new InMemoryEnergyHistoryRepository();
+    await repository.upsertDailySnapshot(
+      TEST_USER_ID,
+      "2026-08-09",
+      createSnapshotInput(3, 1.25),
+    );
+    await repository.upsertDailySnapshot(
+      TEST_USER_ID,
+      referenceDate,
+      createSnapshotInput(3, 5),
+    );
+    await repository.upsertDailySnapshot(
+      OTHER_USER_ID,
+      "2026-08-11",
+      createSnapshotInput(3, 9),
+    );
+
+    await expect(repository.findLatest(TEST_USER_ID)).resolves.toEqual(
+      expect.objectContaining({
+        snapshotDate: referenceDate,
+        tariffBrlPerKwh: 5,
+      }),
+    );
+  });
+
   it("cria um novo snapshot na virada do dia", async () => {
     const repository = new InMemoryEnergyHistoryRepository();
     const service = new EnergyHistoryService(repository);

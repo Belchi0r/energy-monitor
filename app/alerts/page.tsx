@@ -27,11 +27,11 @@ type AlertsPageProps = {
 };
 
 export default async function AlertsPage({ searchParams }: AlertsPageProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh, user] = await Promise.all([
+  const [resolvedSearchParams, user] = await Promise.all([
     searchParams,
-    getEffectiveEnergyTariff(),
     requireUser(),
   ]);
+  const tariffBrlPerKwh = await getEffectiveEnergyTariff(user.id);
   const modeState = parseDashboardDataMode(resolvedSearchParams);
 
   if (modeState.shouldRedirect) {

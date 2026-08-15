@@ -99,6 +99,16 @@ export class InMemoryEnergyHistoryRepository
     return snapshot ? structuredClone(snapshot) : null;
   }
 
+  async findLatest(userId: string) {
+    const snapshot = this.snapshots
+      .filter((item) => item.userId === userId)
+      .toSorted((first, second) =>
+        second.snapshotDate.localeCompare(first.snapshotDate),
+      )[0];
+
+    return snapshot ? structuredClone(snapshot) : null;
+  }
+
   getAll(userId: string) {
     return this.snapshots
       .filter((snapshot) => snapshot.userId === userId)

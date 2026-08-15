@@ -110,7 +110,7 @@ export function SettingsPreferences({
       }
       setSaveStatus("success");
       setSaveMessage(
-        payload.message ?? "Tarifa salva neste navegador.",
+        payload.message ?? "Tarifa salva na sua conta.",
       );
       router.refresh();
     } catch {
@@ -124,7 +124,7 @@ export function SettingsPreferences({
   return (
     <Panel
       title="Preferências da dashboard"
-      description="Preferências locais usadas nas estimativas da dashboard"
+      description="Tarifa da conta e preferências de visualização da dashboard"
       className="min-w-0"
     >
       <form noValidate onSubmit={handleSubmit}>

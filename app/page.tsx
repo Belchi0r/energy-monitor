@@ -16,12 +16,11 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh, user] =
-    await Promise.all([
-      searchParams,
-      getEffectiveEnergyTariff(),
-      requireUser(),
-    ]);
+  const [resolvedSearchParams, user] = await Promise.all([
+    searchParams,
+    requireUser(),
+  ]);
+  const tariffBrlPerKwh = await getEffectiveEnergyTariff(user.id);
   const routeState = parseDashboardSearchParams(
     resolvedSearchParams,
   );

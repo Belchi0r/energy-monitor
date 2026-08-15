@@ -20,11 +20,11 @@ type SettingsPageProps = {
 export default async function SettingsPage({
   searchParams,
 }: SettingsPageProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh] = await Promise.all([
+  const [resolvedSearchParams, user] = await Promise.all([
     searchParams,
-    getEffectiveEnergyTariff(),
     requireUser(),
   ]);
+  const tariffBrlPerKwh = await getEffectiveEnergyTariff(user.id);
   const modeState = parseDashboardDataMode(resolvedSearchParams);
 
   if (modeState.shouldRedirect) {
@@ -36,9 +36,9 @@ export default async function SettingsPage({
       <PageHeader
         eyebrow="Preferências da experiência"
         title="Configurações"
-        description="Ajuste a tarifa e as preferências locais de visualização da dashboard."
-        noticeTitle="Preferências locais"
-        demoDescription="Estas configurações são salvas somente neste navegador. A tarifa é usada nas estimativas da sua conta; período e comparação controlam apenas a experiência de visualização."
+        description="Ajuste a tarifa da conta e as preferências locais de visualização da dashboard."
+        noticeTitle="Preferências da conta"
+        demoDescription="A tarifa é salva na sua conta e usada nas estimativas em todos os dispositivos; período e comparação controlam apenas a experiência de visualização."
         showBackLink
         backHref={buildDashboardUrl("today", false, modeState.mode)}
       />

@@ -7,7 +7,10 @@ import {
   formatEnergyTariffInput,
   serializeEnergyTariff,
 } from "@/lib/energy/energy-tariff";
+import { deviceService } from "@/lib/devices/application";
+import { energyHistoryService } from "@/lib/history-application";
 import {
+  type AuthenticatedUser,
   AuthenticationRequiredError,
   requireUser,
 } from "@/lib/supabase/require-user";
@@ -18,8 +21,10 @@ type ErrorResponse = {
 };
 
 export async function POST(request: Request) {
+  let user: AuthenticatedUser;
+
   try {
-    await requireUser();
+    user = await requireUser();
   } catch (error) {
     const response: ErrorResponse = {
       success: false,
@@ -60,12 +65,29 @@ export async function POST(request: Request) {
     return Response.json(response, { status: 400 });
   }
 
+  try {
+    const devices = await deviceService.listDevices(user.id);
+
+    await energyHistoryService.captureCurrentDay(
+      user.id,
+      devices,
+      result.data.tariff,
+    );
+  } catch {
+    const response: ErrorResponse = {
+      success: false,
+      message: "Não foi possível salvar a tarifa agora.",
+    };
+
+    return Response.json(response, { status: 500 });
+  }
+
   const response = NextResponse.json(
     {
       success: true,
       tariff: result.data.tariff,
       tariffInput: formatEnergyTariffInput(result.data.tariff),
-      message: "Tarifa salva neste navegador.",
+      message: "Tarifa salva na sua conta.",
     },
     { status: 200 },
   );

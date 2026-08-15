@@ -22,7 +22,7 @@ export function ResetPasswordForm() {
     <form
       action={formAction}
       aria-busy={isPending}
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5"
       noValidate
     >
       {state.status === "error" && state.message && !hasFieldErrors ? (

@@ -26,12 +26,11 @@ type HistoryPageProps = {
 export default async function HistoryPage({
   searchParams,
 }: HistoryPageProps) {
-  const [resolvedSearchParams, tariffBrlPerKwh, user] =
-    await Promise.all([
-      searchParams,
-      getEffectiveEnergyTariff(),
-      requireUser(),
-    ]);
+  const [resolvedSearchParams, user] = await Promise.all([
+    searchParams,
+    requireUser(),
+  ]);
+  const tariffBrlPerKwh = await getEffectiveEnergyTariff(user.id);
   const routeState = parseHistorySearchParams(resolvedSearchParams);
   const canonicalRedirect = getHistoryCanonicalRedirect(routeState);
 

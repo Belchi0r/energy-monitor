@@ -22,4 +22,7 @@ export interface EnergyHistoryRepository {
   findEarliest(
     userId: string,
   ): Promise<DailyEnergySnapshotRecord | null>;
+  findLatest(
+    userId: string,
+  ): Promise<DailyEnergySnapshotRecord | null>;
 }

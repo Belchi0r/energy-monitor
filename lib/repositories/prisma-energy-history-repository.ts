@@ -143,4 +143,14 @@ export class PrismaEnergyHistoryRepository
 
     return persisted ? toDomainSnapshot(persisted) : null;
   }
+
+  async findLatest(userId: string) {
+    const persisted = await this.client.dailyEnergySnapshot.findFirst({
+      where: { userId },
+      orderBy: { snapshotDate: "desc" },
+      include: snapshotInclude,
+    });
+
+    return persisted ? toDomainSnapshot(persisted) : null;
+  }
 }

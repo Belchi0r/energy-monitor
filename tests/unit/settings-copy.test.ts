@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 describe("texto das configurações", () => {
-  it("usa preferências locais sem mensagem antiga de login ou banner demonstrativo", async () => {
+  it("distingue a tarifa da conta das preferências locais", async () => {
     const preferencesSource = await readFile(
       new URL("../../components/dashboard/SettingsPreferences.tsx", import.meta.url),
       "utf8",
@@ -25,7 +25,8 @@ describe("texto das configurações", () => {
     expect(preferencesSource).toContain(
       "dados demonstrativos não alteram",
     );
-    expect(pageSource).toContain('noticeTitle="Preferências locais"');
+    expect(pageSource).toContain('noticeTitle="Preferências da conta"');
+    expect(pageSource).toContain("todos os dispositivos");
     expect(pageSource).not.toContain('noticeTitle="Dados demonstrativos"');
   });
 });

@@ -207,6 +207,9 @@ describe("GET /api/dashboard", () => {
         TEST_USER_ID,
         0.84,
       );
+      expect(getEffectiveEnergyTariffMock).toHaveBeenCalledWith(
+        TEST_USER_ID,
+      );
     },
   );
 

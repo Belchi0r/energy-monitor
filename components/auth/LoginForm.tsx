@@ -30,7 +30,7 @@ export function LoginForm({
     <form
       action={formAction}
       aria-busy={isPending}
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5"
       noValidate
     >
       <input type="hidden" name="next" value={nextPath} />

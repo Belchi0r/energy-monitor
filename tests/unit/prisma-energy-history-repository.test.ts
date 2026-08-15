@@ -106,6 +106,7 @@ describe("PrismaEnergyHistoryRepository", () => {
       "2026-08-10",
     );
     await repository.findEarliest(TEST_USER_ID);
+    await repository.findLatest(TEST_USER_ID);
 
     expect(delegate.findUnique).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -133,6 +134,12 @@ describe("PrismaEnergyHistoryRepository", () => {
       expect.objectContaining({
         where: { userId: TEST_USER_ID },
         orderBy: { snapshotDate: "asc" },
+      }),
+    );
+    expect(delegate.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: TEST_USER_ID },
+        orderBy: { snapshotDate: "desc" },
       }),
     );
   });

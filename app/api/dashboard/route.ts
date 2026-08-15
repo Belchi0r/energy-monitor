@@ -49,10 +49,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [tariffBrlPerKwh, user] = await Promise.all([
-      getEffectiveEnergyTariff(),
-      requireUser(),
-    ]);
+    const user = await requireUser();
+    const tariffBrlPerKwh = await getEffectiveEnergyTariff(user.id);
     const data = await dashboardService.getDashboard(
       result.data,
       user.id,

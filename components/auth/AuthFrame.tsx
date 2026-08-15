@@ -52,21 +52,25 @@ export function AuthFrame({
         className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(148,163,184,0.09)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.09)_1px,transparent_1px)] [background-size:40px_40px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
       />
 
-      <div className="relative mx-auto grid min-h-dvh w-full max-w-[1380px] grid-rows-[auto_1fr] lg:grid-cols-[minmax(0,1fr)_minmax(28rem,0.78fr)] lg:grid-rows-none">
-        <section className="flex flex-col px-4 py-4 min-[390px]:px-5 sm:px-8 sm:py-6 lg:px-12 lg:py-10 xl:px-16">
+      <div className="relative mx-auto grid w-full max-w-[1380px] lg:min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(28rem,0.78fr)]">
+        <section className="flex flex-col px-4 py-3 min-[390px]:px-5 sm:px-8 sm:py-6 lg:px-12 lg:py-10 xl:px-16">
           <Link
             href="/login"
             aria-label="Energy Monitor — ir para o login"
-            className="flex w-fit items-center gap-3 rounded-xl text-white"
+            className="flex w-fit items-center gap-2.5 rounded-xl text-white sm:gap-3"
           >
-            <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-950/50 sm:size-11">
-              <Zap aria-hidden="true" className="size-5" strokeWidth={2.5} />
+            <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-950/50 sm:size-11 sm:rounded-xl">
+              <Zap
+                aria-hidden="true"
+                className="size-4 sm:size-5"
+                strokeWidth={2.5}
+              />
             </span>
             <span>
-              <span className="block text-base font-semibold tracking-tight">
+              <span className="block text-[0.9375rem] font-semibold tracking-tight sm:text-base">
                 Energy Monitor
               </span>
-              <span className="block text-xs text-slate-400">
+              <span className="hidden text-xs text-slate-400 sm:block">
                 Inteligência para seu consumo
               </span>
             </span>
@@ -107,19 +111,19 @@ export function AuthFrame({
           </p>
         </section>
 
-        <section className="flex min-w-0 items-start px-3 pb-4 min-[390px]:px-4 sm:px-8 sm:pb-8 lg:items-center lg:border-l lg:border-white/10 lg:bg-slate-950/45 lg:px-10 lg:py-12 xl:px-16">
-          <div className="mx-auto w-full max-w-md rounded-2xl border border-white/10 bg-slate-900/85 p-4 shadow-2xl shadow-black/30 backdrop-blur-xl min-[390px]:p-5 sm:rounded-[1.75rem] sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300 min-[390px]:tracking-[0.2em]">
+        <section className="min-w-0 px-4 pb-5 min-[390px]:px-5 min-[390px]:pb-6 sm:px-8 sm:pb-8 lg:flex lg:items-center lg:border-l lg:border-white/10 lg:bg-slate-950/45 lg:px-10 lg:py-12 xl:px-16">
+          <div className="mx-auto w-full max-w-md border-0 bg-transparent p-0 shadow-none backdrop-blur-none sm:rounded-[1.75rem] sm:border sm:border-white/10 sm:bg-slate-900/85 sm:p-8 sm:shadow-2xl sm:shadow-black/30 sm:backdrop-blur-xl">
+            <p className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300 sm:block">
               {eyebrow}
             </p>
-            <h1 className="mt-2.5 text-[1.375rem] font-semibold leading-tight tracking-[-0.025em] text-white min-[390px]:text-2xl sm:mt-3 sm:text-3xl">
+            <h1 className="text-[1.375rem] font-semibold leading-tight tracking-[-0.025em] text-white min-[390px]:text-2xl sm:mt-3 sm:text-3xl">
               {title}
             </h1>
-            <p className="mt-2 text-sm leading-5 text-slate-400 sm:mt-3 sm:leading-6">
+            <p className="mt-1.5 text-[0.8125rem] leading-5 text-slate-400 sm:mt-3 sm:text-sm sm:leading-6">
               {description}
             </p>
 
-            <div className="mt-5 sm:mt-7">{children}</div>
+            <div className="mt-4 sm:mt-7">{children}</div>
           </div>
         </section>
       </div>

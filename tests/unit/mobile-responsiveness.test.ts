@@ -47,17 +47,23 @@ describe("responsividade mobile", () => {
   it("prioriza o formulário auth entre 320px e 768px sem mudar o desktop", () => {
     const authFrame = source("components/auth/AuthFrame.tsx");
 
-    expect(authFrame).toContain("grid-rows-[auto_1fr]");
-    expect(authFrame).toContain("lg:grid-rows-none");
-    expect(authFrame).toContain("items-start");
+    expect(authFrame).not.toContain("grid-rows-[auto_1fr]");
+    expect(authFrame).toContain("lg:min-h-dvh");
     expect(authFrame).toContain("lg:items-center");
-    expect(authFrame).toContain("px-3 pb-4");
-    expect(authFrame).toContain("min-[390px]:px-4");
+    expect(authFrame).toContain("px-4 pb-5");
+    expect(authFrame).toContain("min-[390px]:px-5");
     expect(authFrame).toContain("sm:px-8 sm:pb-8");
     expect(authFrame).toContain("lg:px-10 lg:py-12");
-    expect(authFrame).toContain("p-4");
-    expect(authFrame).toContain("min-[390px]:p-5");
+    expect(authFrame).toContain(
+      "border-0 bg-transparent p-0 shadow-none backdrop-blur-none",
+    );
+    expect(authFrame).toContain("sm:border-white/10");
+    expect(authFrame).toContain("sm:bg-slate-900/85");
     expect(authFrame).toContain("sm:p-8");
+    expect(authFrame).toContain("hidden text-xs");
+    expect(authFrame).toContain("sm:block");
+    expect(authFrame).toContain("size-9");
+    expect(authFrame).toContain("sm:size-11");
     expect(authFrame).toContain("text-[1.375rem]");
     expect(authFrame).toContain("min-[390px]:text-2xl");
     expect(authFrame).toContain("sm:text-3xl");

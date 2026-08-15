@@ -127,6 +127,25 @@ describe("eficiência histórica simulada", () => {
     expect(JSON.stringify(analysis)).not.toContain("NaN");
   });
 
+  it("não chama o histórico residencial estimado de simulado quando está vazio", () => {
+    const empty: DashboardDataset = {
+      ...dashboardDatasets.last7Days,
+      energyUsage: [],
+      deviceConsumption: [],
+    };
+    const analysis = buildPeriodEnergyAnalysis(
+      "7d",
+      empty,
+      dashboardDatasets.previous7Days,
+      "estimated",
+    );
+
+    expect(JSON.stringify(analysis)).not.toMatch(/simulad/i);
+    expect(analysis.summary.description).toContain(
+      "estimativas históricas válidas",
+    );
+  });
+
   it("é determinístico e não altera os datasets", () => {
     const current = structuredClone(dashboardDatasets.last30Days);
     const previous = structuredClone(

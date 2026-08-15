@@ -8,7 +8,10 @@ import {
   vi,
 } from "vitest";
 
-const { createClientMock, exchangeCodeForSessionMock } = vi.hoisted(() => ({
+const {
+  createClientMock,
+  exchangeCodeForSessionMock,
+} = vi.hoisted(() => ({
   createClientMock: vi.fn(),
   exchangeCodeForSessionMock: vi.fn(),
 }));
@@ -53,6 +56,18 @@ afterEach(() => {
 });
 
 describe("GET /auth/callback", () => {
+  it("não processa TokenHash e permanece exclusivo para PKCE", async () => {
+    const response = await GET(
+      request("?token_hash=token-hash-secreto&type=email"),
+    );
+
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(exchangeCodeForSessionMock).not.toHaveBeenCalled();
+    expect(response.headers.get("location")).toBe(
+      "http://localhost/login?message=confirmation-error",
+    );
+  });
+
   it("troca um code válido pela sessão e redireciona internamente", async () => {
     const response = await GET(
       request("?code=code-secreto&next=%2Fdevices"),
@@ -121,8 +136,10 @@ describe("GET /auth/callback", () => {
     );
   });
 
-  it("rejeita callback sem code sem chamar o Supabase", async () => {
-    const response = await GET(request("?next=%2Fdevices"));
+  it("rejeita callback sem TokenHash nem code sem chamar o Supabase", async () => {
+    const response = await GET(
+      request("?type=email&next=%2Fdevices"),
+    );
     const location = response.headers.get("location")!;
 
     expect(createClientMock).not.toHaveBeenCalled();

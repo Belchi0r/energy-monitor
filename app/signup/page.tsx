@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { AuthFrame } from "@/components/auth/AuthFrame";
 import { SignupForm } from "@/components/auth/SignupForm";
-import { isEmailOtpEnabled } from "@/lib/auth/email-otp-config";
 import { isPublicSignupEnabled } from "@/lib/auth/public-signup-config";
 
 export const metadata: Metadata = {
@@ -11,7 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function SignupPage() {
-  const emailOtpEnabled = isEmailOtpEnabled();
   const publicSignupEnabled = isPublicSignupEnabled();
 
   return (
@@ -25,7 +23,6 @@ export default function SignupPage() {
       }
     >
       <SignupForm
-        emailOtpEnabled={emailOtpEnabled}
         publicSignupEnabled={publicSignupEnabled}
       />
     </AuthFrame>

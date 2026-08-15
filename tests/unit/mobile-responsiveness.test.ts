@@ -44,6 +44,20 @@ describe("responsividade mobile", () => {
     expect(authFrame).not.toContain("overflow-hidden");
   });
 
+  it("mantém o cadastro e a confirmação por link tocáveis no mobile", () => {
+    const signup = source("components/auth/SignupForm.tsx");
+    const linkStep = signup.slice(
+      signup.indexOf("function SignupEmailLinkStep"),
+      signup.indexOf("type SignupActionFlowProps"),
+    );
+
+    expect(linkStep).not.toContain("OtpCodeField");
+    expect(linkStep).not.toMatch(/Digite o código|Verificar código/);
+    expect(linkStep.match(/min-h-11/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(linkStep).toContain("flex flex-wrap justify-center gap-3");
+    expect(signup).toContain("min-h-12 w-full");
+  });
+
   it("reorganiza o cabeçalho público sem esconder ou duplicar o selo", () => {
     const demoPage = source("app/demo/page.tsx");
 
@@ -54,5 +68,30 @@ describe("responsividade mobile", () => {
     expect(demoPage).not.toContain("min-[390px]:hidden");
     expect(demoPage).not.toContain("min-[390px]:inline-flex");
     expect(demoPage).toContain("min-h-11");
+  });
+
+  it("mantém o novo histórico e seus controles adaptáveis em telas estreitas", () => {
+    const dashboardHeader = source(
+      "components/dashboard/DashboardPeriodHeader.tsx",
+    );
+    const comparisonControl = source(
+      "components/dashboard/PeriodComparisonControl.tsx",
+    );
+    const historyNavigation = source(
+      "components/dashboard/HistoryPeriodNav.tsx",
+    );
+
+    expect(dashboardHeader).toContain(
+      "flex min-w-0 items-start gap-3",
+    );
+    expect(dashboardHeader).toContain("sm:max-w-md");
+    expect(dashboardHeader).toContain(
+      "flex flex-col gap-2 xl:flex-row",
+    );
+    expect(comparisonControl).toContain("min-h-11");
+    expect(comparisonControl).toContain("min-w-0");
+    expect(historyNavigation).toContain(
+      "flex min-w-0 flex-col gap-3 xl:flex-row",
+    );
   });
 });

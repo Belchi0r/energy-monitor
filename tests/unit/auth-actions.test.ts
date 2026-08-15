@@ -243,7 +243,7 @@ describe("ações de autenticação", () => {
       email: "new@example.com",
       password: "senha-com-8",
       options: {
-        emailRedirectTo: "http://localhost:3000/auth/callback",
+        emailRedirectTo: "http://localhost:3000/auth/confirm",
       },
     });
     expect(result.status).toBe("signup-success");
@@ -374,7 +374,7 @@ describe("ações de autenticação", () => {
       type: "signup",
       email: "user@example.com",
       options: {
-        emailRedirectTo: "http://localhost:3000/auth/callback",
+        emailRedirectTo: "http://localhost:3000/auth/confirm",
       },
     });
     expect(result).toEqual({

@@ -10,13 +10,25 @@ import {
   compareNumbers,
   sumEnergy,
 } from "@/lib/dashboard/comparison";
+import {
+  formatCalendarDateKey,
+  isWeekendCalendarDate,
+} from "@/lib/history-calendar";
+import type {
+  DailyEnergySnapshotRecord,
+  EnergyHistoryCoverage,
+  EnergyHistoryPeriod,
+} from "@/lib/history-types";
 import { getPeriodDefinition } from "@/lib/dashboard/periods";
 import {
   buildPeriodEnergyAnalysis,
   type HistoricalDashboardPeriod,
   type PeriodEnergyAnalysis,
 } from "@/lib/dashboard/period-efficiency";
-import { formatMetricNumber } from "@/lib/dashboard/formatters";
+import {
+  formatChartEnergy,
+  formatMetricNumber,
+} from "@/lib/dashboard/formatters";
 import {
   buildTodayDeviceAnalysis,
   buildTodayTemporalAnalysis,
@@ -46,6 +58,7 @@ import { normalizeMonetaryValue } from "@/lib/energy/energy-engine.utils";
 import type { DashboardRepository } from "@/lib/repositories/dashboard-repository";
 import type { DashboardQuery } from "@/lib/schemas/dashboard-query-schema";
 import type { DeviceService } from "@/lib/services/device-service";
+import type { EnergyHistoryService } from "@/lib/services/energy-history-service";
 
 function compareMonetaryValues(
   currentValue: number,
@@ -73,6 +86,7 @@ export type DashboardViewData = {
   compare: boolean;
   historyAvailable: boolean;
   comparisonAvailable: boolean;
+  historyCoverage?: EnergyHistoryCoverage;
   emptyState:
     | {
         kind: "no-devices" | "historical-unavailable";
@@ -119,12 +133,10 @@ function buildTodayMetrics(
   compare: boolean,
   definition: DashboardPeriodDefinition,
   tariffBrlPerKwh: number,
-  previous?: DashboardDataset,
+  previous?: DailyEnergySnapshotRecord,
 ) {
-  const previousTotal = previous ? sumEnergy(previous.energyUsage) : 0;
-  const previousEstimatedCost = normalizeMonetaryValue(
-    previousTotal * tariffBrlPerKwh,
-  );
+  const previousTotal = previous?.totalConsumptionKwh ?? 0;
+  const previousEstimatedCost = previous?.estimatedCost ?? 0;
   const consumptionComparison =
     compare && previous
       ? compareNumbers(
@@ -172,6 +184,14 @@ function buildTodayMetrics(
       value: snapshot.activeDeviceCount,
       format: "integer",
       description: "Ativos no cadastro persistente",
+      comparison:
+        compare && previous
+          ? compareNumbers(
+              snapshot.activeDeviceCount,
+              previous.activeDeviceCount,
+              definition.comparisonLabel,
+            )
+          : undefined,
     },
   ] satisfies readonly DashboardMetric[];
 }
@@ -256,10 +276,224 @@ function buildHistoricalMetrics(
   ] satisfies readonly DashboardMetric[];
 }
 
+type EstimatedHistoryDataset = DashboardDataset & {
+  estimatedCost: number;
+};
+
+function getHomePeriodDefinition(
+  period: DashboardPeriod,
+): DashboardPeriodDefinition {
+  const definition = getPeriodDefinition(period);
+
+  return {
+    ...definition,
+    comparisonLabel:
+      period === "today" ? "ontem" : definition.comparisonLabel,
+    chartDescription:
+      period === "today"
+        ? "Curva estimada dos dispositivos ativos em intervalos de duas horas"
+        : "Histórico diário estimado a partir dos dispositivos cadastrados",
+  };
+}
+
+function buildEstimatedHistoryDataset(
+  id: DashboardDataset["id"],
+  label: string,
+  snapshots: readonly DailyEnergySnapshotRecord[],
+): EstimatedHistoryDataset {
+  const devices = new Map<
+    string,
+    {
+      id: string;
+      device: string;
+      description: string;
+      consumptionKwh: number;
+    }
+  >();
+
+  for (const snapshot of snapshots) {
+    for (const device of snapshot.devices) {
+      const current = devices.get(device.deviceId);
+      devices.set(device.deviceId, {
+        id: device.deviceId,
+        device: device.deviceNameSnapshot,
+        description:
+          "Estimativa acumulada no histórico persistido.",
+        consumptionKwh:
+          (current?.consumptionKwh ?? 0) +
+          device.estimatedConsumptionKwh,
+      });
+    }
+  }
+
+  const latest = snapshots.at(-1);
+  const firstDate = snapshots[0]?.snapshotDate;
+  const lastDate = latest?.snapshotDate;
+
+  return {
+    id,
+    label,
+    rangeLabel:
+      firstDate && lastDate
+        ? `${formatCalendarDateKey(firstDate)} a ${formatCalendarDateKey(lastDate)}`
+        : "Sem histórico estimado disponível",
+    daysCount: snapshots.length,
+    granularity: "day",
+    activeDevices: latest?.activeDeviceCount ?? 0,
+    energyUsage: snapshots.map((snapshot) => {
+      const formattedDate = formatCalendarDateKey(
+        snapshot.snapshotDate,
+      );
+
+      return {
+        id: snapshot.snapshotDate,
+        label: formattedDate,
+        shortLabel: formattedDate.slice(0, 5),
+        consumptionKwh: snapshot.totalConsumptionKwh,
+        isWeekend: isWeekendCalendarDate(snapshot.snapshotDate),
+      };
+    }),
+    deviceConsumption: [...devices.values()]
+      .filter((device) => device.consumptionKwh > 0)
+      .toSorted(
+        (first, second) =>
+          second.consumptionKwh - first.consumptionKwh ||
+          first.device.localeCompare(second.device, "pt-BR") ||
+          first.id.localeCompare(second.id),
+      ),
+    recentActivities: snapshots
+      .toReversed()
+      .map((snapshot) => ({
+        id: `estimated-history-${snapshot.id}`,
+        device: "Residência",
+        event: "Estimativa diária registrada no histórico",
+        occurredAt: formatCalendarDateKey(snapshot.snapshotDate),
+        occurredAtIso: snapshot.updatedAt.toISOString(),
+        status: "completed" as const,
+      })),
+    estimatedCost: snapshots.reduce(
+      (total, snapshot) => total + snapshot.estimatedCost,
+      0,
+    ),
+  };
+}
+
+function buildEstimatedHistoricalMetrics(
+  compare: boolean,
+  definition: DashboardPeriodDefinition,
+  current: EstimatedHistoryDataset,
+  previous?: EstimatedHistoryDataset,
+) {
+  const total = sumEnergy(current.energyUsage);
+  const previousTotal = previous ? sumEnergy(previous.energyUsage) : 0;
+  const comparison = (currentValue: number, previousValue: number) =>
+    compare && previous
+      ? compareNumbers(
+          currentValue,
+          previousValue,
+          definition.comparisonLabel,
+        )
+      : undefined;
+  const topDevice = current.deviceConsumption[0];
+  const previousTopDevice = topDevice
+    ? previous?.deviceConsumption.find(
+        (device) => device.id === topDevice.id,
+      )
+    : undefined;
+  const metrics: DashboardMetric[] = [
+    {
+      id: "periodConsumption",
+      title: "Consumo estimado no período",
+      value: total,
+      format: "energy",
+      description: `${current.daysCount} ${current.daysCount === 1 ? "dia disponível" : "dias disponíveis"} no histórico estimado`,
+      comparison: comparison(total, previousTotal),
+    },
+    {
+      id: "dailyAverage",
+      title: "Média diária estimada",
+      value: current.daysCount === 0 ? 0 : total / current.daysCount,
+      format: "energy",
+      description: "Média somente dos dias com snapshot disponível",
+      comparison: comparison(
+        current.daysCount === 0 ? 0 : total / current.daysCount,
+        previous && previous.daysCount > 0
+          ? previousTotal / previous.daysCount
+          : 0,
+      ),
+    },
+    {
+      id: "estimatedCost",
+      title: "Custo histórico estimado",
+      value: current.estimatedCost,
+      format: "currency",
+      description: "Soma calculada com a tarifa armazenada em cada dia",
+      comparison: comparison(
+        current.estimatedCost,
+        previous?.estimatedCost ?? 0,
+      ),
+    },
+  ];
+
+  if (topDevice) {
+    metrics.push({
+      id: "topDevice",
+      title: "Maior consumo estimado",
+      value: topDevice.consumptionKwh,
+      format: "energy",
+      description: topDevice.device,
+      comparison: comparison(
+        topDevice.consumptionKwh,
+        previousTopDevice?.consumptionKwh ?? 0,
+      ),
+    });
+  }
+
+  return metrics;
+}
+
+function addTodayAggregateComparison(
+  analysis: EnergyUsageAnalysis,
+  snapshot: TodayEnergySnapshot,
+  previous: DailyEnergySnapshotRecord,
+  previousLabel: string,
+): EnergyUsageAnalysis {
+  const overallComparison = compareNumbers(
+    snapshot.totalConsumptionKwh,
+    previous.totalConsumptionKwh,
+    previousLabel,
+  );
+
+  return {
+    ...analysis,
+    previousTotalKwh: previous.totalConsumptionKwh,
+    overallComparison,
+    insights: [
+      {
+        id: "persisted-day-comparison",
+        title: overallComparison.message,
+        description: `${formatChartEnergy(snapshot.totalConsumptionKwh)} estimados hoje, ante ${formatChartEnergy(previous.totalConsumptionKwh)} no histórico estimado de ontem.`,
+        tone:
+          overallComparison.significance === "relevant"
+            ? "attention"
+            : overallComparison.significance === "moderate"
+              ? "brand"
+              : "neutral",
+      },
+      ...analysis.insights,
+    ],
+  };
+}
+
 export class DashboardService {
   constructor(
     private readonly repository: DashboardRepository,
     private readonly deviceService: Pick<DeviceService, "listDevices">,
+    private readonly historyService?: Pick<
+      EnergyHistoryService,
+      "captureCurrentDay" | "getPeriod"
+    >,
+    private readonly clock: () => Date = () => new Date(),
   ) {}
 
   async getDashboard(
@@ -274,42 +508,112 @@ export class DashboardService {
       return this.getDemoDashboard(query, effectiveTariff);
     }
 
-    if (query.period !== "today") {
-      return this.getUnavailableHomeHistory(query.period);
-    }
-
-    return this.getHomeTodayDashboard(userId, effectiveTariff);
+    return this.getHomeDashboard(query, userId, effectiveTariff);
   }
 
-  private async getHomeTodayDashboard(
+  private async getHomeDashboard(
+    query: DashboardQuery,
     userId: string,
     tariffBrlPerKwh: number,
   ): Promise<DashboardViewData> {
-    const definition = getPeriodDefinition("today");
     const devices = await this.deviceService.listDevices(userId);
+    const instant = this.clock();
+    const history = await this.loadHomeHistory(
+      userId,
+      devices,
+      tariffBrlPerKwh,
+      query.period,
+      instant,
+    );
+
+    if (query.period !== "today") {
+      return history && history.current.length > 0
+        ? this.getHomeHistoricalDashboard(query, history)
+        : this.getUnavailableHomeHistory(query.period, history?.coverage);
+    }
+
+    return this.getHomeTodayDashboard(
+      query,
+      devices,
+      tariffBrlPerKwh,
+      history,
+    );
+  }
+
+  private getHomeTodayDashboard(
+    query: DashboardQuery,
+    devices: Awaited<ReturnType<DeviceService["listDevices"]>>,
+    tariffBrlPerKwh: number,
+    history?: EnergyHistoryPeriod,
+  ): DashboardViewData {
+    const definition = getHomePeriodDefinition("today");
     const snapshot = buildTodayEnergySnapshot(
       devices,
       tariffBrlPerKwh,
     );
     const hasDevices = devices.length > 0;
+    const comparisonAvailable =
+      history?.coverage.comparisonAvailable ?? false;
+    const compare = query.compare && comparisonAvailable;
+    const previous = compare ? history?.previous[0] : undefined;
     const energyAnalysis = hasDevices
       ? buildEnergyAnalysis(snapshot, { tariffBrlPerKwh })
       : undefined;
-    const temporalAnalysis = hasDevices
+    const baseTemporalAnalysis = hasDevices
       ? buildTodayTemporalAnalysis(snapshot, definition)
       : createEmptyTemporalAnalysis();
-    const deviceAnalysis = hasDevices
-      ? buildTodayDeviceAnalysis(snapshot)
+    const temporalAnalysis = previous
+      ? addTodayAggregateComparison(
+          baseTemporalAnalysis,
+          snapshot,
+          previous,
+          definition.comparisonLabel,
+        )
+      : baseTemporalAnalysis;
+    const currentDeviceConsumption = snapshot.distribution.map(
+      (device) => ({
+        id: device.deviceId,
+        device: device.name,
+        description: `Estimativa atual para ${device.category.toLocaleLowerCase("pt-BR")}.`,
+        consumptionKwh: device.consumptionKwh,
+      }),
+    );
+    const previousDeviceConsumption = previous?.devices.map(
+      (device) => ({
+        id: device.deviceId,
+        device: device.deviceNameSnapshot,
+        description: "Estimativa armazenada no histórico de ontem.",
+        consumptionKwh: device.estimatedConsumptionKwh,
+      }),
+    );
+    const deviceAnalysis =
+      hasDevices && previous
+        ? analyzeDeviceConsumption(
+            currentDeviceConsumption,
+            previousDeviceConsumption,
+            definition.comparisonLabel,
+          )
+        : hasDevices
+          ? buildTodayDeviceAnalysis(snapshot)
       : createEmptyDeviceAnalysis();
     const currentLabel = "Hoje (estimado)";
+    const currentHistoryDataset = history
+      ? buildEstimatedHistoryDataset(
+          definition.currentDatasetId,
+          currentLabel,
+          history.current,
+        )
+      : undefined;
 
     return {
       mode: "home",
       dataOrigin: "user-devices",
       period: "today",
-      compare: false,
-      historyAvailable: false,
-      comparisonAvailable: false,
+      compare,
+      historyAvailable:
+        (history?.coverage.currentAvailableDays ?? 0) > 0,
+      comparisonAvailable,
+      historyCoverage: history?.coverage,
       emptyState: hasDevices
         ? null
         : {
@@ -320,28 +624,38 @@ export class DashboardService {
           },
       definition,
       currentLabel,
+      previousLabel: previous
+        ? "Ontem (histórico estimado)"
+        : undefined,
       metrics: buildTodayMetrics(
         snapshot,
-        false,
+        compare,
         definition,
         tariffBrlPerKwh,
+        previous,
       ),
       temporalAnalysis,
       deviceAnalysis,
       alerts: energyAnalysis?.alerts.map(mapAdvisorAlert) ?? [],
-      timeline: buildDashboardTimeline([], "today", currentLabel),
-      activities: [],
+      timeline: buildDashboardTimeline(
+        currentHistoryDataset?.recentActivities ?? [],
+        "today",
+        currentLabel,
+      ),
+      activities:
+        currentHistoryDataset?.recentActivities.slice(0, 5) ?? [],
       deviceDataSource: "registered-estimate",
       todaySnapshot: snapshot,
       energyAnalysis,
-      transitionKey: "home-today-current",
+      transitionKey: `home-today-${compare ? "comparison" : "current"}`,
     };
   }
 
   private getUnavailableHomeHistory(
     period: HistoricalDashboardPeriod,
+    coverage?: EnergyHistoryCoverage,
   ): DashboardViewData {
-    const definition = getPeriodDefinition(period);
+    const definition = getHomePeriodDefinition(period);
 
     return {
       mode: "home",
@@ -350,15 +664,18 @@ export class DashboardService {
       compare: false,
       historyAvailable: false,
       comparisonAvailable: false,
+      historyCoverage: coverage,
       emptyState: {
         kind: "historical-unavailable",
         title:
-          "Ainda não existem medições históricas para esta residência.",
+          "Ainda não há histórico estimado neste período.",
         description:
-          "O histórico começará a ser exibido quando a integração de medições estiver disponível.",
+          "Acesse a dashboard em dias diferentes para formar o histórico baseado nos dispositivos cadastrados.",
+        supportingText:
+          "Dias sem snapshot permanecem ausentes e nunca são tratados como consumo zero.",
       },
       definition,
-      currentLabel: `${definition.label} (indisponível)`,
+      currentLabel: `${definition.label} (sem histórico estimado)`,
       metrics: [],
       temporalAnalysis: createEmptyTemporalAnalysis(),
       deviceAnalysis: createEmptyDeviceAnalysis(),
@@ -368,6 +685,133 @@ export class DashboardService {
       deviceDataSource: "registered-estimate",
       transitionKey: `home-${period}-unavailable`,
     };
+  }
+
+  private getHomeHistoricalDashboard(
+    query: DashboardQuery,
+    history: EnergyHistoryPeriod,
+  ): DashboardViewData {
+    const period = query.period as HistoricalDashboardPeriod;
+    const definition = getHomePeriodDefinition(period);
+    const partialSuffix = history.coverage.currentComplete
+      ? ""
+      : ` (${history.coverage.currentAvailableDays}/${history.coverage.expectedDays} dias disponíveis)`;
+    const currentLabel = `${definition.label} — histórico estimado${partialSuffix}`;
+    const current = buildEstimatedHistoryDataset(
+      definition.currentDatasetId,
+      currentLabel,
+      history.current,
+    );
+    const comparisonAvailable = history.coverage.comparisonAvailable;
+    const compare = query.compare && comparisonAvailable;
+    const previous = compare
+      ? buildEstimatedHistoryDataset(
+          definition.previousDatasetId,
+          `${definition.comparisonLabel} — histórico estimado`,
+          history.previous,
+        )
+      : undefined;
+    const temporalAnalysis = analyzeEnergyUsage(
+      current,
+      definition,
+      previous,
+    );
+    const deviceAnalysis = analyzeDeviceConsumption(
+      current.deviceConsumption,
+      previous?.deviceConsumption,
+      definition.comparisonLabel,
+    );
+    const alerts = generateDashboardAlerts({
+      period,
+      currentLabel,
+      temporalAnalysis,
+      deviceAnalysis,
+    }).map((alert) => ({ ...alert, dataOrigin: "estimated" as const }));
+    const periodEnergyAnalysis =
+      compare && previous
+        ? buildPeriodEnergyAnalysis(
+            period,
+            current,
+            previous,
+            "estimated",
+          )
+        : undefined;
+
+    return {
+      mode: "home",
+      dataOrigin: "user-devices",
+      period,
+      compare,
+      historyAvailable: true,
+      comparisonAvailable,
+      historyCoverage: history.coverage,
+      emptyState: null,
+      definition,
+      currentLabel,
+      previousLabel: previous?.label,
+      metrics: buildEstimatedHistoricalMetrics(
+        compare,
+        definition,
+        current,
+        previous,
+      ),
+      temporalAnalysis,
+      deviceAnalysis,
+      alerts,
+      timeline: buildDashboardTimeline(
+        current.recentActivities,
+        period,
+        currentLabel,
+      ),
+      activities: current.recentActivities.slice(0, 5),
+      deviceDataSource: "registered-estimate",
+      periodEnergyAnalysis,
+      transitionKey: `home-${period}-${compare ? "comparison" : history.coverage.currentComplete ? "complete" : "partial"}`,
+    };
+  }
+
+  private async loadHomeHistory(
+    userId: string,
+    devices: Awaited<ReturnType<DeviceService["listDevices"]>>,
+    tariffBrlPerKwh: number,
+    period: DashboardPeriod,
+    instant: Date,
+  ) {
+    if (!this.historyService) {
+      return undefined;
+    }
+
+    try {
+      await this.historyService.captureCurrentDay(
+        userId,
+        devices,
+        tariffBrlPerKwh,
+        instant,
+      );
+    } catch (error) {
+      this.reportHistoryFailure("write", error);
+    }
+
+    try {
+      return await this.historyService.getPeriod(
+        userId,
+        period,
+        instant,
+      );
+    } catch (error) {
+      this.reportHistoryFailure("read", error);
+      return undefined;
+    }
+  }
+
+  private reportHistoryFailure(
+    stage: "write" | "read",
+    error: unknown,
+  ) {
+    console.error("Energy history operation failed.", {
+      stage,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
   }
 
   private async getDemoDashboard(

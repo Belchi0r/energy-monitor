@@ -74,6 +74,8 @@ describe("campo OTP reutilizável", () => {
     );
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("tabular-nums");
+    expect(markup).toContain("max-w-[18rem]");
+    expect(markup).toContain("min-h-14");
     expect(markup.match(/<input/g)).toHaveLength(1);
   });
 
@@ -118,29 +120,28 @@ describe("campo OTP reutilizável", () => {
 });
 
 describe("etapas OTP de autenticação", () => {
-  it("mostra a etapa de cadastro sem manter ou enviar senha", () => {
+  it("mostra somente confirmação por link no cadastro", () => {
     const signup = source("components/auth/SignupForm.tsx");
-    const otpStep = signup.slice(
-      signup.indexOf("function SignupOtpStep"),
+    const linkStep = signup.slice(
+      signup.indexOf("function SignupEmailLinkStep"),
       signup.indexOf("type SignupActionFlowProps"),
     );
 
-    expect(otpStep).toContain("Confirme seu e-mail");
-    expect(otpStep).toContain(
-      "Digite o código enviado ao seu e-mail para concluir o cadastro neste",
+    expect(linkStep).toContain("Confira seu e-mail");
+    expect(linkStep).toContain(
+      "Enviamos um link para confirmar sua conta.",
     );
-    expect(otpStep).toContain('id="signup-otp"');
-    expect(otpStep).toContain(
+    expect(linkStep).toContain(
       '<input type="hidden" name="email" value={email} />',
     );
-    expect(otpStep).not.toContain('name="password"');
-    expect(otpStep).not.toContain("PasswordStrength");
-    expect(otpStep).not.toContain("{email}</");
-    expect(otpStep).toContain("Entrar");
-    expect(otpStep).toContain("Esqueci minha senha");
-    expect(otpStep).toContain("Reenviar código");
-    expect(otpStep).toContain("Trocar e-mail");
-    expect(otpStep).not.toMatch(/link do e-mail|alternativa para continuar/i);
+    expect(linkStep).not.toContain('name="password"');
+    expect(linkStep).not.toContain("PasswordStrength");
+    expect(linkStep).not.toContain("{email}</");
+    expect(linkStep).toContain("Entrar");
+    expect(linkStep).toContain("Reenviar confirmação");
+    expect(linkStep).toContain("Trocar e-mail");
+    expect(linkStep).not.toContain("OtpCodeField");
+    expect(linkStep).not.toMatch(/Digite o código|Verificar código/);
   });
 
   it("mostra a etapa de recuperação com OTP como único fluxo atual", () => {
@@ -176,8 +177,14 @@ describe("etapas OTP de autenticação", () => {
       expect(form).toContain(
         "setAttemptNumber((current) => current + 1)",
       );
-      expect(form).toContain("setToken(\"\")");
     }
+
+    expect(source("components/auth/SignupForm.tsx")).not.toContain(
+      "setToken(\"\")",
+    );
+    expect(source("components/auth/ForgotPasswordForm.tsx")).toContain(
+      "setToken(\"\")",
+    );
   });
 
   it("não anuncia a contagem regressiva a cada segundo", () => {

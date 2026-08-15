@@ -52,18 +52,22 @@ describe("configuração server-only do OTP por e-mail", () => {
     }
   });
 
-  it("é lida nas páginas server e envia somente o booleano", () => {
+  it("permanece server-only e controla somente a recuperação", () => {
     const signupPage = source("app/signup/page.tsx");
     const recoveryPage = source("app/forgot-password/page.tsx");
 
-    for (const page of [signupPage, recoveryPage]) {
-      expect(page).toContain(
-        'import { isEmailOtpEnabled } from "@/lib/auth/email-otp-config"',
-      );
-      expect(page).toContain("const emailOtpEnabled = isEmailOtpEnabled()");
-      expect(page).toContain("emailOtpEnabled={emailOtpEnabled}");
-      expect(page).not.toContain("AUTH_EMAIL_OTP_ENABLED");
-    }
+    expect(signupPage).not.toContain("isEmailOtpEnabled");
+    expect(signupPage).not.toContain("emailOtpEnabled");
+    expect(recoveryPage).toContain(
+      'import { isEmailOtpEnabled } from "@/lib/auth/email-otp-config"',
+    );
+    expect(recoveryPage).toContain(
+      "const emailOtpEnabled = isEmailOtpEnabled()",
+    );
+    expect(recoveryPage).toContain(
+      "emailOtpEnabled={emailOtpEnabled}",
+    );
+    expect(recoveryPage).not.toContain("AUTH_EMAIL_OTP_ENABLED");
   });
 });
 
@@ -72,34 +76,30 @@ describe("interfaces nos dois modos de confirmação", () => {
     const signup = source("components/auth/SignupForm.tsx");
     const linkStep = signup.slice(
       signup.indexOf("function SignupEmailLinkStep"),
-      signup.indexOf("function SignupOtpStep"),
+      signup.indexOf("type SignupActionFlowProps"),
     );
 
     expect(linkStep).toContain("Confira seu e-mail");
     expect(linkStep).toContain(
-      "Enviamos as próximas instruções quando aplicável.",
+      "Enviamos um link para confirmar sua conta.",
     );
     expect(linkStep).toContain("Reenviar confirmação");
     expect(linkStep).toContain("Trocar e-mail");
     expect(linkStep).toContain("Entrar");
-    expect(linkStep).toContain("Esqueci minha senha");
     expect(linkStep).toContain("resendSignupConfirmationAction");
     expect(linkStep).not.toContain("OtpCodeField");
     expect(linkStep).not.toMatch(/código enviado|verificar código/i);
   });
 
-  it("cadastro com OTP mantém integralmente a etapa de código", () => {
+  it("não permite que a flag OTP selecione uma etapa numérica no cadastro", () => {
     const signup = source("components/auth/SignupForm.tsx");
-    const otpStep = signup.slice(
-      signup.indexOf("function SignupOtpStep"),
-      signup.indexOf("type SignupActionFlowProps"),
-    );
+    const signupPage = source("app/signup/page.tsx");
 
-    expect(otpStep).toContain("<OtpCodeField");
-    expect(otpStep).toContain("verifySignupOtpAction");
-    expect(otpStep).toContain("Reenviar código");
-    expect(otpStep).toContain("resendSignupConfirmationAction");
-    expect(signup).toContain("return emailOtpEnabled ?");
+    expect(signup).not.toContain("SignupOtpStep");
+    expect(signup).not.toContain("OtpCodeField");
+    expect(signup).not.toContain("verifySignupOtpAction");
+    expect(signup).not.toContain("emailOtpEnabled");
+    expect(signupPage).not.toContain("emailOtpEnabled");
   });
 
   it("recuperação por link não renderiza OTP e mantém resposta indistinguível", () => {
@@ -140,11 +140,23 @@ describe("interfaces nos dois modos de confirmação", () => {
     expect(resetPage).toContain("getRecoveryAuthContext()");
   });
 
-  it("preserva o callback PKCE seguro como fluxo principal por link", () => {
+  it("separa o callback PKCE da confirmação TokenHash SSR", () => {
     const callback = source("app/auth/callback/route.ts");
+    const confirmation = source("app/auth/confirm/route.ts");
 
     expect(callback).toContain("resolveSafeRedirectPath");
     expect(callback).toContain("exchangeCodeForSession(code)");
+    expect(callback).not.toContain("token_hash");
+    expect(callback).not.toContain("verifyOtp");
+    expect(confirmation).toContain("token_hash: tokenHash");
+    expect(confirmation).toContain("type: EMAIL_CONFIRMATION_TYPE");
+    expect(confirmation).toContain("supabase.auth.getUser()");
+    expect(confirmation).toContain(
+      'response.headers.set("Cache-Control", "no-store")',
+    );
+    expect(confirmation).toContain(
+      'response.headers.set("Referrer-Policy", "no-referrer")',
+    );
     expect(callback).toContain('response.headers.set("Cache-Control", "no-store")');
     expect(callback).toContain('response.headers.set("Referrer-Policy", "no-referrer")');
   });

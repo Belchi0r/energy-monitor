@@ -1,10 +1,16 @@
-import { BadgeInfo, FlaskConical, House } from "lucide-react";
+import {
+  BadgeInfo,
+  CalendarClock,
+  FlaskConical,
+  House,
+} from "lucide-react";
 import Link from "next/link";
 
 import { DataModeSelector } from "@/components/dashboard/DataModeSelector";
 import { DashboardPeriodControls } from "@/components/dashboard/DashboardPeriodControls";
 import { buildDashboardUrl } from "@/components/utils/dashboard-period";
 import { formatMetricNumber } from "@/lib/dashboard/formatters";
+import { formatCalendarDateKey } from "@/lib/history-calendar";
 import type { DashboardViewData } from "@/lib/services/dashboard-service";
 
 type DashboardPeriodHeaderProps = {
@@ -29,7 +35,40 @@ export function getDashboardHeaderDescription(
 
   return view.period === "today"
     ? `Sua residência possui consumo estimado de ${consumptionLabel}. A análise abaixo destaca eficiência, oportunidades e padrões de uso.`
-    : "Consulte a disponibilidade de medições reais para o período selecionado.";
+    : "Consulte o histórico estimado criado a partir dos snapshots diários dos dispositivos cadastrados.";
+}
+
+export function getHistoryCoverageMessage(
+  view: Pick<
+    DashboardViewData,
+    "period" | "historyCoverage" | "comparisonAvailable"
+  >,
+) {
+  const coverage = view.historyCoverage;
+
+  if (!coverage) {
+    return null;
+  }
+
+  const availableSince = coverage.earliestSnapshotDate
+    ? ` Dados disponíveis desde ${formatCalendarDateKey(coverage.earliestSnapshotDate)}.`
+    : "";
+
+  if (view.period === "today") {
+    return view.comparisonAvailable
+      ? `A comparação Hoje × Ontem está disponível.${availableSince}`
+      : `A comparação com ontem ficará disponível após o primeiro dia completo de histórico.${availableSince}`;
+  }
+
+  if (!coverage.currentComplete) {
+    return `Histórico parcial: ${coverage.currentAvailableDays} de ${coverage.expectedDays} dias possuem estimativas. Dias ausentes não são contabilizados como zero.${availableSince}`;
+  }
+
+  if (!coverage.previousComplete) {
+    return `O período atual possui cobertura completa, mas a comparação aguarda ${coverage.expectedDays} dias no intervalo anterior.${availableSince}`;
+  }
+
+  return `Histórico estimado completo para os dois intervalos comparáveis.${availableSince}`;
 }
 
 export function DashboardPeriodHeader({
@@ -55,6 +94,9 @@ export function DashboardPeriodHeader({
     view,
     consumptionLabel,
   );
+  const historyCoverageMessage = isDemo
+    ? null
+    : getHistoryCoverageMessage(view);
 
   return (
     <section aria-labelledby="overview-title">
@@ -123,6 +165,24 @@ export function DashboardPeriodHeader({
             <House aria-hidden="true" className="size-4" />
             Voltar para minha residência
           </Link>
+        </aside>
+      ) : null}
+
+      {historyCoverageMessage ? (
+        <aside
+          aria-label="Cobertura do histórico estimado"
+          className="mt-4 flex min-w-0 items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-blue-950"
+        >
+          <CalendarClock
+            aria-hidden="true"
+            className="mt-0.5 size-5 shrink-0 text-blue-700"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">Histórico estimado</p>
+            <p className="mt-0.5 text-sm leading-5">
+              {historyCoverageMessage}
+            </p>
+          </div>
         </aside>
       ) : null}
 

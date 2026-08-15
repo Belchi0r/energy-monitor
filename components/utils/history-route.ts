@@ -29,9 +29,10 @@ export function parseHistorySearchParams(params: HistorySearchParams) {
     comparisonValue === undefined ||
     comparisonValue === "0" ||
     comparisonValue === "1";
-  const comparisonRequested = comparisonValue !== "0";
   const compare =
-    modeState.mode === "demo" && comparisonRequested;
+    modeState.mode === "demo"
+      ? comparisonValue !== "0"
+      : comparisonValue === "1";
 
   return {
     mode: modeState.mode,
@@ -41,7 +42,7 @@ export function parseHistorySearchParams(params: HistorySearchParams) {
       modeState.shouldRedirect ||
       (periodValue !== undefined && !isDashboardPeriod(periodValue)) ||
       !validComparison ||
-      (modeState.mode === "home" && comparisonValue !== undefined) ||
+      (modeState.mode === "home" && comparisonValue === "0") ||
       (modeState.mode === "home" && resolvedPeriod === "today"),
   };
 }
@@ -53,7 +54,7 @@ export function buildHistoryUrl(
 ) {
   const params = new URLSearchParams({ mode, period });
 
-  if (mode === "demo") {
+  if (mode === "demo" || compare) {
     params.set("compare", compare ? "1" : "0");
   }
 

@@ -46,7 +46,9 @@ export function HistoryActivityView({
               Filtrar registros
             </p>
             <p className="text-xs text-slate-500">
-              A lista abaixo é demonstrativa.
+              {dataOrigin === "global-demo"
+                ? "A lista abaixo usa eventos simulados."
+                : "A lista abaixo mostra snapshots estimados persistidos."}
             </p>
           </div>
         </div>

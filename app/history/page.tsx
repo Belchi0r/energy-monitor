@@ -48,6 +48,11 @@ export default async function HistoryPage({
     user.id,
     tariffBrlPerKwh,
   );
+
+  if (routeState.compare && !view.compare) {
+    redirect(buildHistoryUrl(routeState.period, false, routeState.mode));
+  }
+
   const isDemo = view.mode === "demo";
   const homeHref = buildHistoryUrl(view.period, false, "home");
   const demoHref = buildHistoryUrl(
@@ -64,13 +69,13 @@ export default async function HistoryPage({
         description={
           isDemo
             ? "Explore períodos diferentes para compreender tendências, picos e mudanças no cenário demonstrativo."
-            : "Consulte a disponibilidade de medições históricas da sua residência."
+            : "Acompanhe o histórico estimado criado a partir dos dispositivos cadastrados na sua residência."
         }
         noticeTitle={isDemo ? "Modo demonstração" : "Minha residência"}
         demoDescription={
           isDemo
-            ? "Os registros históricos e comparações são simulados. Alterações no cadastro atual não criam medições retroativas."
-            : "Esta visão não utiliza datasets globais nem apresenta atividades simuladas."
+            ? "Os registros históricos e comparações são simulados. Alterações no cadastro atual não modificam cenários anteriores."
+            : "Snapshots passados permanecem congelados; dias sem acesso continuam ausentes e não são tratados como zero."
         }
         action={
           <DataModeSelector
@@ -105,6 +110,7 @@ export default async function HistoryPage({
                 period={view.period}
                 compare={view.compare}
                 comparisonLabel={view.definition.comparisonLabel}
+                comparisonAvailable={view.comparisonAvailable}
                 mode={view.mode}
               />
               <div className="mt-5">

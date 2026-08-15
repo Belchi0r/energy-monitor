@@ -247,7 +247,7 @@ export async function signupAction(
       email: parsed.data.email,
       password: parsed.data.password,
       options: {
-        emailRedirectTo: new URL("/auth/callback", appOrigin).toString(),
+        emailRedirectTo: new URL("/auth/confirm", appOrigin).toString(),
       },
     });
 
@@ -279,79 +279,6 @@ export async function signupAction(
   }
 
   return signupSuccessState();
-}
-
-export async function verifySignupOtpAction(
-  _previousState: OtpActionState,
-  formData: FormData,
-): Promise<OtpActionState> {
-  const extracted = extractEmailOtpFormData(formData);
-
-  if (!extracted.success) {
-    return {
-      status: "error",
-      message: "Revise o código informado e tente novamente.",
-      fieldErrors: extracted.fieldErrors,
-    };
-  }
-
-  const parsed = emailOtpFormSchema.safeParse(extracted.data);
-
-  if (!parsed.success) {
-    return {
-      status: "error",
-      message: "Revise o código informado e tente novamente.",
-      fieldErrors: parsed.error.flatten().fieldErrors as Pick<
-        AuthFieldErrors,
-        "email" | "token"
-      >,
-    };
-  }
-
-  let supabase: Awaited<ReturnType<typeof createClient>> | null = null;
-
-  try {
-    supabase = await createClient();
-    const { data, error } = await supabase.auth.verifyOtp({
-      email: parsed.data.email,
-      token: parsed.data.token,
-      type: "email",
-    });
-
-    if (error) {
-      return otpErrorState(
-        error,
-        "Não foi possível confirmar o código agora. Solicite outro código e tente novamente.",
-      );
-    }
-
-    if (
-      !data.user ||
-      !data.session ||
-      data.session.user.id !== data.user.id ||
-      !(await hasExpectedCurrentUser(supabase, data.user.id))
-    ) {
-      await discardUntrustedSession(supabase);
-
-      return {
-        status: "error",
-        message:
-          "Não foi possível confirmar o código agora. Solicite outro código e tente novamente.",
-      };
-    }
-  } catch {
-    if (supabase) {
-      await discardUntrustedSession(supabase);
-    }
-
-    return {
-      status: "error",
-      message:
-        "Não foi possível confirmar o código agora. Solicite outro código e tente novamente.",
-    };
-  }
-
-  redirect("/");
 }
 
 export async function resendSignupConfirmationAction(
@@ -410,7 +337,7 @@ export async function resendSignupConfirmationAction(
       email: parsed.data.email,
       options: {
         emailRedirectTo: new URL(
-          "/auth/callback",
+          "/auth/confirm",
           appOrigin,
         ).toString(),
       },

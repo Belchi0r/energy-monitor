@@ -26,6 +26,12 @@ export function ConsumptionCharts({
   previousLabel,
   deviceDataSource,
 }: ConsumptionChartsProps) {
+  const temporalPreviousLabel = temporalAnalysis.points.some(
+    (point) => point.previousKwh !== undefined,
+  )
+    ? previousLabel
+    : undefined;
+
   return (
     <section
       aria-label="Visualizações de consumo"
@@ -40,7 +46,7 @@ export function ConsumptionCharts({
           analysis={temporalAnalysis}
           averageLabel={definition.averageLabel}
           currentLabel={currentLabel}
-          previousLabel={previousLabel}
+          previousLabel={temporalPreviousLabel}
           pointNoun={definition.pointNoun}
         />
       </Panel>
@@ -49,7 +55,9 @@ export function ConsumptionCharts({
         title="Consumo por dispositivo"
         description={
           deviceDataSource === "registered-estimate"
-            ? "Estimativa diária dos dispositivos ativos cadastrados"
+            ? definition.period === "today"
+              ? "Estimativa diária dos dispositivos ativos cadastrados"
+              : "Histórico estimado acumulado por dispositivo cadastrado"
             : `Distribuição simulada em ${definition.label.toLocaleLowerCase("pt-BR")}`
         }
         className="min-w-0 bg-slate-50/40"

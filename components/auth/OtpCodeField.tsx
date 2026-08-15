@@ -35,7 +35,7 @@ export function OtpCodeField({
   };
 
   return (
-    <div className="text-left">
+    <div className="mx-auto w-full max-w-[18rem] text-left">
       <label
         htmlFor={id}
         className="block text-sm font-medium text-slate-200"
@@ -57,9 +57,12 @@ export function OtpCodeField({
         onPaste={handlePaste}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${helpId} ${errorId}` : helpId}
-        className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3.5 py-3 text-center font-mono text-lg tracking-[0.32em] text-white tabular-nums outline-none transition-[border-color,box-shadow,background-color] hover:border-slate-600 focus:border-emerald-400 focus:bg-slate-950 focus:ring-3 focus:ring-emerald-400/15 motion-reduce:transition-none"
+        className="mt-2 min-h-14 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-center font-mono text-xl tracking-[0.22em] text-white tabular-nums outline-none transition-[border-color,box-shadow,background-color] placeholder:text-slate-600 hover:border-slate-600 focus:border-emerald-400 focus:bg-slate-950 focus:ring-3 focus:ring-emerald-400/15 motion-reduce:transition-none sm:text-2xl sm:tracking-[0.28em]"
       />
-      <p id={helpId} className="mt-2 text-xs leading-5 text-slate-500">
+      <p
+        id={helpId}
+        className="mt-2 text-center text-xs leading-5 text-slate-500"
+      >
         Digite os {AUTH_EMAIL_OTP_LENGTH} números exibidos no e-mail.
       </p>
       {error ? (

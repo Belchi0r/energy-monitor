@@ -97,7 +97,9 @@ export function PeriodEfficiencySummary({
             />
           </div>
           <p className="mt-2 text-xs leading-4 text-slate-500">
-            Índice demonstrativo; as entradas históricas são simuladas.
+            {analysis.dataOrigin === "simulated"
+              ? "Índice demonstrativo; as entradas históricas são simuladas."
+              : "Índice estimado; baseado nos snapshots dos dispositivos cadastrados."}
           </p>
         </div>
 

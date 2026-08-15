@@ -5,7 +5,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { AlertPanel } from "@/components/dashboard/AlertPanel";
-import { getDashboardHeaderDescription } from "@/components/dashboard/DashboardPeriodHeader";
+import {
+  getDashboardHeaderDescription,
+  getHistoryCoverageMessage,
+} from "@/components/dashboard/DashboardPeriodHeader";
 import {
   HistoryActivityView,
   type HistoryActivityViewProps,
@@ -35,6 +38,46 @@ const activityTableProps = {
 } as const;
 
 describe("textos e origem dos estados da dashboard", () => {
+  it("explica cobertura parcial e a primeira data sem transformar ausência em zero", () => {
+    const message = getHistoryCoverageMessage({
+      period: "7d",
+      comparisonAvailable: false,
+      historyCoverage: {
+        expectedDays: 7,
+        currentAvailableDays: 3,
+        previousAvailableDays: 0,
+        currentComplete: false,
+        previousComplete: false,
+        comparisonAvailable: false,
+        earliestSnapshotDate: "2026-08-06",
+      },
+    });
+
+    expect(message).toContain("Histórico parcial: 3 de 7 dias");
+    expect(message).toContain("não são contabilizados como zero");
+    expect(message).toContain("Dados disponíveis desde 06/08/2026");
+  });
+
+  it("orienta sobre Hoje × Ontem sem tratar a ausência como erro", () => {
+    expect(
+      getHistoryCoverageMessage({
+        period: "today",
+        comparisonAvailable: false,
+        historyCoverage: {
+          expectedDays: 1,
+          currentAvailableDays: 1,
+          previousAvailableDays: 0,
+          currentComplete: true,
+          previousComplete: false,
+          comparisonAvailable: false,
+          earliestSnapshotDate: "2026-08-10",
+        },
+      }),
+    ).toContain(
+      "A comparação com ontem ficará disponível após o primeiro dia completo de histórico.",
+    );
+  });
+
   it("não afirma que existe análise no cabeçalho sem dispositivos", () => {
     const description = getDashboardHeaderDescription(
       {

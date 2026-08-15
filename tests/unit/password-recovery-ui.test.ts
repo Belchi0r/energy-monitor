@@ -64,16 +64,12 @@ describe("interface de recuperação de senha", () => {
     ).toHaveLength(2);
   });
 
-  it("mostra ações Entrar e Esqueci minha senha após o cadastro", () => {
+  it("mostra a ação Entrar após o cadastro", () => {
     const signupForm = source("components/auth/SignupForm.tsx");
 
     expect(signupForm).toContain('href="/login"');
-    expect(signupForm).toContain('href="/forgot-password"');
     expect(signupForm).toContain("Entrar");
-    expect(signupForm).toContain("Esqueci minha senha");
-    expect(signupForm).toContain(
-      "Confirme seu e-mail",
-    );
+    expect(signupForm).toContain("Confira seu e-mail");
   });
 
   it("mantém loading, bloqueio de reenvio e aria-busy nos formulários", () => {

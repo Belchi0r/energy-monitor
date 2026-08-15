@@ -15,6 +15,7 @@ type HistoryPeriodNavProps = {
   period: DashboardPeriod;
   compare: boolean;
   comparisonLabel: string;
+  comparisonAvailable: boolean;
   mode: DashboardDataMode;
 };
 
@@ -22,6 +23,7 @@ export function HistoryPeriodNav({
   period,
   compare,
   comparisonLabel,
+  comparisonAvailable,
   mode,
 }: HistoryPeriodNavProps) {
   const router = useRouter();
@@ -50,7 +52,8 @@ export function HistoryPeriodNav({
       <PeriodComparisonControl
         checked={compare}
         comparisonLabel={comparisonLabel}
-        disabled={isPending}
+        disabled={isPending || !comparisonAvailable}
+        unavailable={!comparisonAvailable}
         onChange={(nextCompare) => navigate(period, nextCompare)}
       />
       <p className="sr-only" aria-live="polite">

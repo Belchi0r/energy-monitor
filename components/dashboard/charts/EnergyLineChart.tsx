@@ -146,7 +146,7 @@ export function EnergyLineChart({
           className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-10 text-center"
         >
           <p className="text-sm font-semibold text-slate-900">
-            Nenhuma medição de consumo disponível
+            Nenhuma estimativa de consumo disponível
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-5 text-slate-500">
             Adicione dispositivos para preparar as estimativas da sua residência.

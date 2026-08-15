@@ -34,6 +34,39 @@ model Device {
   @@index([userId])
 }
 
+model DailyEnergySnapshot {
+  id                  String   @id @default(uuid())
+  userId              String   @db.Uuid
+  snapshotDate        DateTime @db.Date
+  totalConsumptionKwh Float
+  estimatedCost       Float
+  activeDeviceCount   Int
+  tariffBrlPerKwh     Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  devices DailyDeviceEnergySnapshot[]
+
+  @@unique([userId, snapshotDate])
+  @@index([userId, snapshotDate(sort: Desc)])
+}
+
+model DailyDeviceEnergySnapshot {
+  id                      String   @id @default(uuid())
+  snapshotId              String
+  deviceId                String
+  deviceNameSnapshot      String
+  estimatedConsumptionKwh Float
+  estimatedCost           Float
+  active                  Boolean
+  createdAt               DateTime @default(now())
+
+  snapshot DailyEnergySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, deviceId])
+  @@index([snapshotId])
+}
+
 model DashboardDataset {
   id            String @id
   label         String

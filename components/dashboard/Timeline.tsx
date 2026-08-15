@@ -59,7 +59,7 @@ export function Timeline({ timeline, dataOrigin }: TimelineProps) {
       <p className="border-t border-slate-200 pt-3 text-xs leading-5 text-slate-500">
         {isDemo
           ? "Eventos demonstrativos serão exibidos quando estiverem disponíveis."
-          : "Eventos da residência serão exibidos quando houver medições disponíveis."}
+          : "Eventos da residência serão exibidos quando houver snapshots estimados disponíveis."}
       </p>
     </Panel>
   );

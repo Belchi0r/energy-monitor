@@ -91,7 +91,7 @@ export function RecentActivityTable({
           <p className="mt-1 text-sm text-slate-500">
             {isDemo
               ? "Nenhum registro demonstrativo está disponível neste período."
-              : "As atividades aparecerão quando houver medições disponíveis."}
+              : "Os registros aparecerão quando houver snapshots estimados disponíveis."}
           </p>
         </div>
       ) : (

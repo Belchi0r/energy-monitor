@@ -30,7 +30,7 @@ export type HistoricalDashboardPeriod = Exclude<
 export type PeriodEnergyAnalysis = {
   period: HistoricalDashboardPeriod;
   summary: EnergySummary;
-  dataOrigin: "simulated";
+  dataOrigin: "simulated" | "estimated";
   sourceLabel: string;
 };
 
@@ -56,14 +56,18 @@ function createReason(
   };
 }
 
-function buildEmptySummary(): EnergySummary {
+function buildEmptySummary(
+  dataOrigin: PeriodEnergyAnalysis["dataOrigin"],
+): EnergySummary {
+  const isSimulated = dataOrigin === "simulated";
   const reasons = [
     createReason({
       id: "historical-insufficient-data",
       type: "balanced",
       label: "Base histórica insuficiente",
-      description:
-        "O período não possui consumo simulado suficiente para avaliar padrões.",
+      description: isSimulated
+        ? "O período não possui consumo simulado suficiente para avaliar padrões."
+        : "O período não possui estimativas históricas suficientes para avaliar padrões.",
       scoreImpact: 0,
     }),
   ];
@@ -72,8 +76,9 @@ function buildEmptySummary(): EnergySummary {
     score: 75,
     status: "balanced",
     title: "Aguardando dados do período",
-    description:
-      "O índice permanece neutro até que existam valores simulados válidos.",
+    description: isSimulated
+      ? "O índice permanece neutro até que existam valores simulados válidos."
+      : "O índice permanece neutro até que existam estimativas históricas válidas.",
     isDemonstrative: true,
     reasons,
     justifications: reasons,
@@ -84,16 +89,19 @@ export function buildPeriodEnergyAnalysis(
   period: HistoricalDashboardPeriod,
   current: DashboardDataset,
   previous: DashboardDataset,
+  dataOrigin: PeriodEnergyAnalysis["dataOrigin"] = "simulated",
 ): PeriodEnergyAnalysis {
   const totalKwh = sumEnergy(current.energyUsage);
 
   if (totalKwh <= 0) {
     return {
       period,
-      summary: buildEmptySummary(),
-      dataOrigin: "simulated",
+      summary: buildEmptySummary(dataOrigin),
+      dataOrigin,
       sourceLabel:
-        "Índice demonstrativo calculado somente com o histórico simulado do período.",
+        dataOrigin === "simulated"
+          ? "Índice demonstrativo calculado somente com o histórico simulado do período."
+          : "Índice estimado calculado somente com snapshots persistidos dos dispositivos cadastrados.",
     };
   }
 
@@ -452,7 +460,9 @@ export function buildPeriodEnergyAnalysis(
         type: "balanced",
         label: "Distribuição equilibrada",
         description:
-          "Nenhuma regra demonstrativa de concentração, pico ou variação relevante foi acionada.",
+          dataOrigin === "simulated"
+            ? "Nenhuma regra demonstrativa de concentração, pico ou variação relevante foi acionada."
+            : "Nenhuma regra de concentração, pico ou variação relevante foi acionada nas estimativas históricas.",
         scoreImpact: 0,
       }),
     );
@@ -488,8 +498,10 @@ export function buildPeriodEnergyAnalysis(
   return {
     period,
     summary,
-    dataOrigin: "simulated",
+    dataOrigin,
     sourceLabel:
-      "Índice demonstrativo calculado somente com datasets históricos simulados; não é diretamente comparável ao índice de Hoje.",
+      dataOrigin === "simulated"
+        ? "Índice demonstrativo calculado somente com datasets históricos simulados; não é diretamente comparável ao índice de Hoje."
+        : "Índice estimado calculado com o histórico persistido; não representa medição física.",
   };
 }

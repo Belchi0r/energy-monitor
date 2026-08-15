@@ -20,7 +20,7 @@ export function PeriodComparisonControl({
           <span className="block">
             Comparação <span className="font-semibold text-slate-900">indisponível</span>
             <span className="mt-0.5 block text-xs font-normal text-slate-500">
-              Sem medições reais anteriores
+              Histórico estimado anterior insuficiente
             </span>
           </span>
         ) : (

@@ -57,7 +57,6 @@ describe("configuração server-only do cadastro público", () => {
   it("sem cadastro público renderiza somente as ações demo e login", () => {
     const markup = renderToStaticMarkup(
       createElement(SignupForm, {
-        emailOtpEnabled: false,
         publicSignupEnabled: false,
       }),
     );
@@ -79,7 +78,7 @@ describe("configuração server-only do cadastro público", () => {
     expect(signupForm).toContain("<EnabledSignupForm");
     expect(signupForm).toContain("<SignupActionFlow");
     expect(signupForm).toContain("signupAction");
-    expect(signupForm).toContain("SignupOtpStep");
     expect(signupForm).toContain("SignupEmailLinkStep");
+    expect(signupForm).not.toContain("SignupOtpStep");
   });
 });

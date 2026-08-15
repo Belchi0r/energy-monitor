@@ -58,16 +58,16 @@ describe("experiência de senha no cadastro", () => {
   it("não mantém o indicador nem as senhas montados após o sucesso", () => {
     const signupForm = source("components/auth/SignupForm.tsx");
     const successComponent = signupForm.slice(
-      signupForm.indexOf("function SignupOtpStep"),
+      signupForm.indexOf("function SignupEmailLinkStep"),
       signupForm.indexOf("type SignupActionFlowProps"),
     );
 
     expect(signupForm).toContain(
       'if (state.status === "signup-success")',
     );
-    expect(signupForm).toContain("return emailOtpEnabled ?");
-    expect(signupForm).toContain("<SignupOtpStep");
     expect(signupForm).toContain("<SignupEmailLinkStep");
+    expect(signupForm).not.toContain("SignupOtpStep");
+    expect(signupForm).not.toContain("emailOtpEnabled");
     expect(successComponent).not.toContain("PasswordStrength");
     expect(successComponent).not.toContain('name="password"');
   });
@@ -169,22 +169,24 @@ describe("aviso reutilizável de Caps Lock", () => {
 });
 
 describe("reenvio na tela de sucesso", () => {
-  it("usa OTP como fluxo principal do cadastro", () => {
+  it("usa somente o link TokenHash como fluxo de confirmação do cadastro", () => {
     const signupForm = source("components/auth/SignupForm.tsx");
 
-    expect(signupForm).toContain("verifySignupOtpAction");
-    expect(signupForm).toContain('id="signup-otp"');
+    expect(signupForm).toContain("SignupEmailLinkStep");
+    expect(signupForm).not.toContain("verifySignupOtpAction");
+    expect(signupForm).not.toContain('id="signup-otp"');
+    expect(signupForm).not.toContain("OtpCodeField");
     expect(signupForm).not.toContain("subscribeToAuthFlowEvent");
   });
 
   it("limita a região live ao conteúdo informativo", () => {
     const signupForm = source("components/auth/SignupForm.tsx");
-    const otpStep = signupForm.slice(
-      signupForm.indexOf("function SignupOtpStep"),
+    const linkStep = signupForm.slice(
+      signupForm.indexOf("function SignupEmailLinkStep"),
       signupForm.indexOf("type SignupActionFlowProps"),
     );
-    const liveRegionMatch = otpStep.match(
-      /<div role="status" aria-live="polite">([\s\S]*?)<form[\s\S]*?action=\{verifyAction\}/,
+    const liveRegionMatch = linkStep.match(
+      /<div role="status" aria-live="polite">([\s\S]*?)<\/div>/,
     );
     const liveRegion = liveRegionMatch?.[1] ?? "";
 
@@ -194,14 +196,14 @@ describe("reenvio na tela de sucesso", () => {
     );
     expect(liveRegion).toContain("<MailCheck");
     expect(liveRegion).toContain(
-      "Confirme seu e-mail",
+      "Confira seu e-mail",
     );
     expect(liveRegion).toContain(
-      "Digite o código enviado ao seu e-mail",
+      "Enviamos um link para confirmar sua conta.",
     );
     expect(liveRegion).not.toContain("<Link");
     expect(liveRegion).not.toContain("<form");
-    expect(liveRegion).not.toContain("Reenviar código");
+    expect(liveRegion).not.toContain("Reenviar confirmação");
   });
 
   it("oferece reenvio sem incluir senha no formulário secundário", () => {
@@ -218,7 +220,7 @@ describe("reenvio na tela de sucesso", () => {
       signupForm.indexOf("</form>", resendActionIndex),
     );
 
-    expect(signupForm).toContain("Reenviar código");
+    expect(signupForm).toContain("Reenviar confirmação");
     expect(resendForm).toContain(
       '<input type="hidden" name="email" value={email} />',
     );
@@ -249,14 +251,12 @@ describe("reenvio na tela de sucesso", () => {
     const signupForm = source("components/auth/SignupForm.tsx");
 
     expect(signupForm).toContain(
-      "Confirme seu e-mail",
+      "Confira seu e-mail",
     );
     expect(signupForm).toContain(
-      "Você pode já possuir uma conta.",
+      "Enviamos um link para confirmar sua conta.",
     );
-    expect(signupForm).toContain(
-      "Por segurança, não confirmamos publicamente se um endereço está",
-    );
+    expect(signupForm).not.toMatch(/Digite o código|Verificar código/);
     expect(signupForm).not.toContain("{email}</");
   });
 });

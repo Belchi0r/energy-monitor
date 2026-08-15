@@ -37,7 +37,7 @@ describe("modo compartilhado nas páginas", () => {
     );
   });
 
-  it("remove parâmetros incompatíveis ao trocar histórico para home", () => {
+  it("preserva comparação residencial e canonicaliza Hoje para 30 dias", () => {
     const state = parseHistorySearchParams({
       mode: "home",
       period: "today",
@@ -47,11 +47,11 @@ describe("modo compartilhado nas páginas", () => {
     expect(state).toEqual({
       mode: "home",
       period: "30d",
-      compare: false,
+      compare: true,
       shouldRedirect: true,
     });
     expect(getHistoryCanonicalRedirect(state)).toBe(
-      "/history?mode=home&period=30d",
+      "/history?mode=home&period=30d&compare=1",
     );
   });
 

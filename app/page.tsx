@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import {
+  buildDashboardUrl,
   getDashboardCanonicalRedirect,
   parseDashboardSearchParams,
   type DashboardSearchParams,
@@ -40,6 +41,12 @@ export default async function Home({ searchParams }: HomeProps) {
     user.id,
     tariffBrlPerKwh,
   );
+
+  if (routeState.compare && !view.compare) {
+    redirect(
+      buildDashboardUrl(routeState.period, false, routeState.mode),
+    );
+  }
 
   return <DashboardOverview view={view} />;
 }

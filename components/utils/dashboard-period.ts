@@ -34,7 +34,7 @@ export function parseDashboardSearchParams(params: DashboardSearchParams) {
   const modeState = parseDashboardDataMode({ mode: params.mode });
   const mode = modeState.mode;
   const comparisonRequested = firstValue(params.compare) === "true";
-  const compare = mode === "demo" && comparisonRequested;
+  const compare = comparisonRequested;
 
   return {
     period,
@@ -42,8 +42,7 @@ export function parseDashboardSearchParams(params: DashboardSearchParams) {
     mode,
     shouldRedirect:
       (periodValue !== undefined && !isDashboardPeriod(periodValue)) ||
-      modeState.shouldRedirect ||
-      (mode === "home" && comparisonRequested),
+      modeState.shouldRedirect,
   };
 }
 
@@ -54,7 +53,7 @@ export function buildDashboardUrl(
 ) {
   const searchParams = new URLSearchParams({ mode, period });
 
-  if (compare && mode === "demo") {
+  if (compare) {
     searchParams.set("compare", "true");
   }
 

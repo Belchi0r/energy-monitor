@@ -17,7 +17,7 @@ describe("estado da URL do dashboard", () => {
     );
   });
 
-  it("canonicaliza home com compare=true para compare=false", () => {
+  it("preserva compare=true em home para o serviço validar cobertura", () => {
     expect(
       parseDashboardSearchParams({
         mode: "home",
@@ -27,23 +27,21 @@ describe("estado da URL do dashboard", () => {
     ).toEqual({
       mode: "home",
       period: "30d",
-      compare: false,
-      shouldRedirect: true,
+      compare: true,
+      shouldRedirect: false,
     });
   });
 
-  it("gera redirect canônico sem compare e preserva período e home", () => {
+  it("gera URL residencial com comparação quando solicitada", () => {
     const routeState = parseDashboardSearchParams({
       mode: "home",
       period: "7d",
       compare: "true",
     });
 
-    expect(getDashboardCanonicalRedirect(routeState)).toBe(
-      "/?mode=home&period=7d",
-    );
+    expect(getDashboardCanonicalRedirect(routeState)).toBeNull();
     expect(buildDashboardUrl("7d", true, "home")).toBe(
-      "/?mode=home&period=7d",
+      "/?mode=home&period=7d&compare=true",
     );
   });
 

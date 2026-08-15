@@ -152,12 +152,13 @@ describe("proxy de autenticação", () => {
     },
   );
 
-  it("permite páginas públicas e callback PKCE sem sessão", async () => {
+  it("permite páginas públicas e endpoints de autenticação sem sessão", async () => {
     for (const path of [
       "/login",
       "/signup",
       "/forgot-password",
       "/auth/callback",
+      "/auth/confirm",
     ]) {
       const response = await updateSession(request(path));
 

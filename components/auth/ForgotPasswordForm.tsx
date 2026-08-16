@@ -190,6 +190,12 @@ function RecoveryEmailLinkStep({
           Caso exista uma conta associada a este endereço, enviaremos um link
           seguro para continuar a recuperação.
         </p>
+        <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left text-xs leading-5 text-slate-400">
+          <strong className="font-semibold text-slate-200">
+            Não encontrou a mensagem?
+          </strong>{" "}
+          Verifique também as pastas de Spam ou Lixo Eletrônico.
+        </p>
       </div>
 
       <div className="mt-6 border-t border-white/10 pt-5">
@@ -334,6 +340,12 @@ function RecoveryOtpStep({
         <p className="mt-3 text-xs leading-5 text-slate-500">
           Mantenha esta página aberta. Você pode consultar o código pelo celular
           e digitá-lo aqui.
+        </p>
+        <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left text-xs leading-5 text-slate-400">
+          <strong className="font-semibold text-slate-200">
+            O código não chegou?
+          </strong>{" "}
+          Verifique também as pastas de Spam ou Lixo Eletrônico.
         </p>
       </div>
 

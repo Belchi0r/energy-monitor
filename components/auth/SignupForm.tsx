@@ -242,6 +242,12 @@ function SignupEmailLinkStep({
         <p className="mt-3 text-sm leading-6 text-slate-400">
           Enviamos um link para confirmar sua conta.
         </p>
+        <p className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3 text-left text-xs leading-5 text-slate-400">
+          <strong className="font-semibold text-slate-200">
+            Não encontrou o link?
+          </strong>{" "}
+          Verifique também as pastas de Spam ou Lixo Eletrônico.
+        </p>
       </div>
 
       <div className="mt-5 flex flex-wrap justify-center gap-3">
